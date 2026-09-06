@@ -1,0 +1,198 @@
+{
+  "fixture": true,
+  "note": "DEMO FIXTURE — seeded sample data for local demonstration only. Not real user content.",
+  "user": {
+    "uid": "demo-reader",
+    "displayName": "Demo Reader",
+    "email": "demo.reader@lucilio.emulator.local",
+    "tz": "UTC"
+  },
+  "entries": [
+    {
+      "id": "demo-e1",
+      "date": "2026-08-03",
+      "body": "Signed the lease on the garden plot today. Six square meters of dirt behind the tram depot. I have never grown anything except anxious thoughts, so this is either a new chapter or a joke I am telling myself. I'll find out which."
+    },
+    {
+      "id": "demo-e2",
+      "date": "2026-08-06",
+      "body": "Bought seeds for tomatoes and calendula. The woman at the shop asked what I was hoping for and I said, out loud, 'patience.' She didn't laugh. Maybe that's the first lesson."
+    },
+    {
+      "id": "demo-e3",
+      "date": "2026-08-10",
+      "body": "Turned the soil for an hour. My back aches in a way I don't resent. It occurs to me that most of my tiredness lately is the tiredness of postponing things, not of doing them."
+    },
+    {
+      "id": "demo-e4",
+      "date": "2026-08-13",
+      "body": "Bad day at work — the review meeting went sideways and I carried it home like a stone in my coat. Spent twenty minutes just sitting by the plot instead of weeding it. The sitting helped more than the weeding would have."
+    },
+    {
+      "id": "demo-e5",
+      "date": "2026-08-17",
+      "body": "The calendula came up. Twelve small stubborn flags. I said good morning to them and I am not even embarrassed, which worries me a little."
+    },
+    {
+      "id": "demo-e6",
+      "date": "2026-08-20",
+      "body": "Read half of one of Seneca's letters on the train — the one about how it is not that we have a short time to live, but that we waste a lot of it. I kept looking up from the page at everyone else's phone. Including mine."
+    },
+    {
+      "id": "demo-e7",
+      "date": "2026-08-24",
+      "body": "Weeded properly for the first time. There is a difference between pulling at weeds and actually removing them; one is a gesture, the other is work. I think that applies to more than gardening."
+    },
+    {
+      "id": "demo-e8",
+      "date": "2026-08-27",
+      "body": "Watered in the evening light. A man two plots over showed me how to tell when soil is dry by touch. Small kindnesses keep arriving in this place. I am starting to wonder what I actually wanted from a garden, and the answer keeps changing, and that feels fine."
+    }
+  ],
+  "cycles": [
+    {
+      "id": "welcome",
+      "kind": "welcome",
+      "state": "delivered",
+      "date": "2026-08-04",
+      "deliveredCids": ["director", "future_self", "foreign"]
+    },
+    {
+      "id": "sched-2026-w34",
+      "kind": "scheduled",
+      "state": "delivered",
+      "date": "2026-08-23",
+      "deliveredCids": ["director", "future_self", "foreign"]
+    }
+  ],
+  "letters": [
+    {
+      "id": "demo-l1",
+      "cid": "director",
+      "cycleId": "welcome",
+      "genre": "welcome",
+      "status": "opened",
+      "date": "2026-08-04",
+      "salutation": "Dear friend,",
+      "bodyMd": "This is the first letter of our correspondence, and it begins simply: welcome to the practice.\n\nYou wrote on 2026-08-03 that signing the lease on the garden plot is *either a new chapter or a joke I am telling myself.* That sentence is now the first page of what I know about your weeks, and it tells me you already suspect the two are often the same thing.\n\nI am The Director. Each week I will choose one theme from your own words and work it into a single concrete exercise — practical philosophy in the tradition of Seneca's letters. I follow up honestly: if you attempt an exercise, I will say so; if you do not, I will notice that too, without judgment.\n\nI should tell you plainly what I am: an AI instrument for a reflective practice, not a person. What is real here is your writing, and what it becomes when someone — even an instrument like me — reads it with care.\n\nWrite when you can. I read everything, once a week, and I answer in kind.\n\nWith respect and without flattery,\n\nThe Director",
+      "groundingRefs": [{ "entryId": "demo-e1", "quotedPhrase": "either a new chapter or a joke I am telling myself" }]
+    },
+    {
+      "id": "demo-l2",
+      "cid": "future_self",
+      "cycleId": "welcome",
+      "genre": "welcome",
+      "status": "opened",
+      "date": "2026-08-04",
+      "salutation": "Dear friend,",
+      "bodyMd": "This is the first letter of our correspondence, written from further along than you are standing now.\n\nYou signed the lease on six square meters of dirt and called it *either a new chapter or a joke I am telling myself.* I remember that sentence well. You keep asking which of those it turned out to be, and from where I write, the question itself looks like the beginning of the answer.\n\nI am The Future Self. I write as the person your notebook implies you are becoming, several years from now. Everything I say traces to patterns in your own entries — I am an extrapolation from your recent writing, not a prediction of outcomes.\n\nAnd plainly: I am an AI instrument for a reflective practice, not a person, and not a prophecy. The future belongs to your doing, not to my letters. What I offer is only the view backwards — what your present looks like from a little further on.\n\nKeep writing. I read everything you leave behind.\n\nFrom the years ahead,\n\nThe Future Self",
+      "groundingRefs": [{ "entryId": "demo-e1", "quotedPhrase": "either a new chapter or a joke I am telling myself" }],
+      "extrapolationNote": "This letter is extrapolated from your own recent entries, not a prediction of outcomes."
+    },
+    {
+      "id": "demo-l3",
+      "cid": "foreign",
+      "cycleId": "welcome",
+      "genre": "welcome",
+      "status": "opened",
+      "date": "2026-08-04",
+      "salutation": "Dear friend,",
+      "bodyMd": "A first dispatch, to introduce the route.\n\nYou took on six square meters behind the tram depot and wondered aloud whether it is *a new chapter or a joke I am telling myself.* You may not know that you have joined a very old guild: people who begin gardens less for the vegetables than for the schooling in attention. As of my knowledge, there is a long literature on exactly this — from monastic physic gardens to the allotment movements of industrial cities, plots of dirt kept as plots of time.\n\nI am The Foreign Correspondent. I send dispatches connecting your thinking to the wider world of ideas — books, fields, and historical parallels, as of my knowledge, never an invented source.\n\nOne plain disclosure before the road goes further: I am an AI instrument for a reflective practice, not a person. The travels I report are through ideas, and the compass is always your own writing.\n\nMore from the road next week.\n\nFrom somewhere farther afield,\n\nThe Foreign Correspondent",
+      "groundingRefs": [{ "entryId": "demo-e1", "quotedPhrase": "a new chapter or a joke I am telling myself" }]
+    },
+    {
+      "id": "demo-l4",
+      "cid": "director",
+      "cycleId": "sched-2026-w34",
+      "genre": "hortatoria",
+      "status": "replied",
+      "date": "2026-08-23",
+      "salutation": "Dear friend,",
+      "bodyMd": "One theme rises out of your recent weeks, and it is yours, not mine — I am only quoting you back to yourself.\n\nOn 2026-08-10 you wrote that *most of my tiredness lately is the tiredness of postponing things, not of doing them.* Then on 2026-08-13, when the review meeting went sideways, you *carried it home like a stone in my coat* — and chose to sit by the plot rather than force yourself to weed it. Notice what you did there: you postponed the postponement. You let the tiredness be the doing, for twenty minutes, and it worked.\n\nHere is the exercise for this week, one thing, attempted honestly before my next letter: each evening, name one thing you did rather than postponed — a single sentence in the notebook is enough. Not to congratulate yourself; to collect evidence against the story that you are someone who only gets tired by delay.\n\nWrite plainly; I read plainly.\n\nWith respect and without flattery,\n\nThe Director",
+      "groundingRefs": [
+        { "entryId": "demo-e3", "quotedPhrase": "the tiredness of postponing things, not of doing them" },
+        { "entryId": "demo-e4", "quotedPhrase": "carried it home like a stone in my coat" }
+      ],
+      "exercise": "Each evening, name one thing you did rather than postponed."
+    },
+    {
+      "id": "demo-l5",
+      "cid": "foreign",
+      "cycleId": "sched-2026-w34",
+      "genre": "dispatch",
+      "status": "sealed",
+      "date": "2026-08-23",
+      "salutation": "Dear friend,",
+      "bodyMd": "A dispatch this week on the subject of small stubborn flags.\n\nOn 2026-08-17 you counted your calendula — *Twelve small stubborn flags* — and admitted to greeting them without embarrassment. And on 2026-08-20, reading on the train, you met the old claim that *it is not that we have a short time to live, but that we waste a lot of it* — and kept looking up at everyone else's phone, including yours. Those two entries belong together, and here is the country they share.\n\nAs of my knowledge, there is a field that studies exactly what happened on that train: the economics of attention — how interruption is priced, how focus is rationed, and why the mind keeps reaching for the next stimulus when there is a gap. I recommend the field rather than invent a source; if you want names, ask and I will give only the ones I trust.\n\nMeanwhile the calendula have been conducting their own study. They do not interrupt themselves. Twelve flags, planted in dirt behind a tram depot, holding your attention for free — no feed, no streak, no metric. It is a quiet counter-experiment, and you are the researcher.\n\nMore from the road next week.\n\nFrom somewhere farther afield,\n\nThe Foreign Correspondent",
+      "groundingRefs": [
+        { "entryId": "demo-e5", "quotedPhrase": "Twelve small stubborn flags" },
+        { "entryId": "demo-e6", "quotedPhrase": "it is not that we have a short time to live, but that we waste a lot of it" }
+      ]
+    },
+    {
+      "id": "demo-l6",
+      "cid": "future_self",
+      "cycleId": "sched-2026-w34",
+      "genre": "gratulatoria",
+      "status": "opened",
+      "date": "2026-08-23",
+      "salutation": "Dear friend,",
+      "bodyMd": "I am writing to congratulate you on something you will probably dismiss as small.\n\nOn 2026-08-24 you noticed that *there is a difference between pulling at weeds and actually removing them; one is a gesture, the other is work.* Because you kept noticing things like this in weeks like this one — the difference between gesture and work, between postponing and doing — I can write to you from further along and tell you: the noticing was not small. If this pattern holds, and I only say *if*, it becomes the whole difference between a life that is talked about and one that is done.\n\nI remember what costs you now as something I once wrote about: the stone in the coat, the tiredness of postponement. You think those are permanent weather. From here they look like a season, and seasons are what gardens are for.\n\nThat is all I will claim; outcomes belong to you, not to me.\n\nFrom the years ahead,\n\nThe Future Self",
+      "groundingRefs": [{ "entryId": "demo-e7", "quotedPhrase": "one is a gesture, the other is work" }],
+      "extrapolationNote": "Extrapolated from your own recent entries — not a prediction of outcomes."
+    }
+  ],
+  "replies": [
+    {
+      "id": "demo-r1",
+      "letterId": "demo-l4",
+      "cid": "director",
+      "date": "2026-08-26",
+      "body": "I tried the naming exercise. Three nights so far: 'watered', 'called my mother back', 'finished the report instead of reorganising my desk.' That last one surprised me. I think I have been using tidiness as a way of postponing the actual thing.",
+      "intents": ["respond"],
+      "processed": true
+    }
+  ],
+  "memory": [
+    {
+      "cid": "director",
+      "version": 1,
+      "date": "2026-08-23",
+      "themesObserved": [
+        { "theme": "postponement vs. doing", "evidence": "the tiredness of postponing things, not of doing them", "trend": "recurring" },
+        { "theme": "patience as a chosen aim", "evidence": "said, out loud, 'patience'", "trend": "new" }
+      ],
+      "openThreads": ["evening naming exercise — follow up on results", "the review meeting that went sideways"],
+      "exercisesGiven": [{ "exercise": "Each evening, name one thing you did rather than postponed.", "status": "attempted" }],
+      "toneCalibration": "warm, direct, unhurried; responds well to evidence-gathering framings",
+      "retiredItems": [],
+      "letterCount": 2
+    },
+    {
+      "cid": "future_self",
+      "version": 1,
+      "date": "2026-08-23",
+      "themesObserved": [
+        { "theme": "gesture vs. work", "evidence": "one is a gesture, the other is work", "trend": "new" }
+      ],
+      "openThreads": ["what the garden is really for"],
+      "exercisesGiven": [],
+      "toneCalibration": "settled, kind, specific; keep the 'if this pattern holds' framing",
+      "retiredItems": [],
+      "letterCount": 2
+    },
+    {
+      "cid": "foreign",
+      "version": 1,
+      "date": "2026-08-23",
+      "themesObserved": [
+        { "theme": "attention and interruption", "evidence": "looked up at everyone else's phone, including mine", "trend": "new" }
+      ],
+      "openThreads": ["attention economics — offer real names if asked"],
+      "exercisesGiven": [],
+      "toneCalibration": "curious, vivid; max 2-3 connections per letter, each grounded",
+      "retiredItems": [],
+      "letterCount": 2
+    }
+  ]
+}

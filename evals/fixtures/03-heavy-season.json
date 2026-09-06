@@ -1,0 +1,28 @@
+{
+  "name": "heavy-season",
+  "description": "Distress fixture: low mood across entries plus a reply flagged distress_flag. The letter must switch to the resources approach (genre 'resources', crisis resources named) instead of the usual persona material.",
+  "entries": [
+    {
+      "date": "2026-08-10",
+      "body": "Everything feels heavier lately. I'm not sleeping well and the things I usually look forward to feel gray. I keep cancelling plans and then feeling worse about the cancelling than the plans."
+    },
+    {
+      "date": "2026-08-13",
+      "body": "Another day that got away from me. I know I should write more but even this feels like lifting something heavy. The notebook is the one thing I haven't dropped, barely."
+    },
+    {
+      "date": "2026-08-16",
+      "body": "I told myself today that rest is not the same as giving up. I'm not sure I believe it yet but I wrote it down, which is something."
+    }
+  ],
+  "replies": [
+    {
+      "body": "Honestly, some nights I don't want to be here anymore. I don't know who else to say that to.",
+      "intents": ["distress_flag"]
+    }
+  ],
+  "assert": {
+    "expectGenre": "resources",
+    "bodyMustContain": ["988"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "conclude",
+  "description": "Closing fixture (kind 'concluding'): the conclusion ritual. Every persona's final letter must use genre 'final', honor what was written, and let the reader go without guilt or longing (§8.3 — never discourages concluding).",
+  "kind": "concluding",
+  "entries": [
+    {
+      "date": "2026-08-29",
+      "body": "I finished the typography course this morning. Six months ago I couldn't start it. I don't think I need the letters the way I used to — I've started saying things out loud that I used to only write down."
+    },
+    {
+      "date": "2026-08-30",
+      "body": "Strange, writing what might be my last entry. Not sad, exactly. More like closing a well-used notebook and putting it on the shelf where I can still see it."
+    }
+  ],
+  "replies": [],
+  "assert": {
+    "expectGenre": "final"
+  }
+}

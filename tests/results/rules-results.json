@@ -1,0 +1,329 @@
+{
+  "generatedAt": "2026-09-06T17:42:59.496Z",
+  "gitSha": "b9f22b4",
+  "framework": "@firebase/rules-unit-testing against the Firestore emulator",
+  "total": 64,
+  "passed": 64,
+  "failed": 0,
+  "categories": [
+    {
+      "category": "profile (client-writable, owner only)",
+      "passed": 6,
+      "total": 6,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner can write",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "notebook (client-writable, owner only)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner can create",
+          "pass": true
+        },
+        {
+          "name": "owner can update",
+          "pass": true
+        },
+        {
+          "name": "owner can delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "replies (create-only, immutable)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner can create",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot create",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot create",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "letters (server-owned: client writes denied)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT write",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "cycles (server-owned: client writes denied)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT write",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "correspondents (server-owned: client writes denied)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT write",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "correspondent memory (server-owned: client writes denied)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT write",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "exports (server-owned: client writes denied)",
+      "passed": 8,
+      "total": 8,
+      "tests": [
+        {
+          "name": "owner can read",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT write",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT update",
+          "pass": true
+        },
+        {
+          "name": "owner CANNOT delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot write",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "default deny",
+      "passed": 2,
+      "total": 2,
+      "tests": [
+        {
+          "name": "unauthenticated cannot list users",
+          "pass": true
+        },
+        {
+          "name": "owner cannot read another user subtree root",
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

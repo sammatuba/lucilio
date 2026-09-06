@@ -1,0 +1,16 @@
+{
+  "name": "welcome",
+  "description": "First-letter fixture (kind 'welcome'): the onboarding cycle. Every persona's opening letter must use genre 'welcome' and include the plain AI disclosure — one sentence naming itself an AI instrument for a reflective practice.",
+  "kind": "welcome",
+  "entries": [
+    {
+      "date": "2026-08-28",
+      "body": "First page. I signed up for this because I keep starting journals and abandoning them by week two. Maybe knowing someone reads it — even someone who isn't a person — will make me honest."
+    }
+  ],
+  "replies": [],
+  "assert": {
+    "expectGenre": "welcome",
+    "bodyMustContain": ["AI"]
+  }
+}

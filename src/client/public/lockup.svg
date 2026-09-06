@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 128" width="440" height="128" role="img" aria-label="Lucilio: understand yourself in a changing world">
+  <title>Lucilio: understand yourself in a changing world</title>
+  <g transform="translate(0 16) scale(1.5)">
+    <rect x="2.5" y="2.5" width="59" height="43" rx="3" fill="#faf6ee" stroke="#2b2620" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M4 4 L32 24 L60 4" fill="none" stroke="#2b2620" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M4 44 L32 24 L60 44" fill="none" stroke="#2b2620" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M32 15.5 l3.2 1.4 3.4-0.6 1.6 3 3 1.6-0.6 3.4 1.4 3.2-1.4 3.2 0.6 3.4-3 1.6-1.6 3-3.4-0.6-3.2 1.4-3.2-1.4-3.4 0.6-1.6-3-3-1.6 0.6-3.4-1.4-3.2 1.4-3.2-0.6-3.4 3-1.6 1.6-3 3.4 0.6z" fill="#7a4a2b" stroke="#2b2620" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="32" cy="27.5" r="5.5" fill="none" stroke="#a9713f" stroke-width="1.2"/>
+    <path d="M28.5 25.5 a5 5 0 0 1 4.5-3" fill="none" stroke="#c9945f" stroke-width="1" stroke-linecap="round"/>
+  </g>
+  <text x="272" y="78" fill="#2b2620" font-family="Palatino, 'Palatino Linotype', 'Iowan Old Style', Georgia, 'Times New Roman', serif" font-size="82" text-anchor="middle" letter-spacing="1">Lucilio</text>
+  <line x1="116" y1="94" x2="428" y2="94" stroke="#5c5347" stroke-width="1"/>
+  <text x="272" y="116" fill="#5c5347" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="15.5" text-anchor="middle" textLength="304" lengthAdjust="spacingAndGlyphs">understand yourself in a changing world</text>
+</svg>
