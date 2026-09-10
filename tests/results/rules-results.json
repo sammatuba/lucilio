@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-06T18:07:42.287Z",
-  "gitSha": "deb2670",
+  "generatedAt": "2026-09-10T09:40:45.944Z",
+  "gitSha": "70e0140",
   "framework": "@firebase/rules-unit-testing against the Firestore emulator",
   "total": 64,
   "passed": 64,

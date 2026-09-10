@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
 import {
   collection,
@@ -18,6 +18,7 @@ import ReflectionControls from '../components/ReflectionControls';
 import EntryReflection from '../components/EntryReflection';
 import WaitingTray from '../components/WaitingTray';
 import CorrespondentsAside from '../components/CorrespondentsAside';
+import NotebookGuide from '../components/NotebookGuide';
 import type { DeskPayload } from '../../shared/schemas';
 
 // US-2: write any time; the write is verified BEFORE the composer clears; on
@@ -42,6 +43,12 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
   const [settingsAttempt, setSettingsAttempt] = useState(0);
   const [reflecting, setReflecting] = useState<Record<string, { preferences: ReflectionPreferences; autoStart: boolean }>>({});
   const [plateSeed, setPlateSeed] = useState<PlateSeed | null>(null);
+  // The last entry whose save was acknowledged. It carries the "Saved just
+  // now" tag and a single primary next action so the reader always knows that
+  // the write landed and what the useful next move is.
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(null);
+  const [saveNote, setSaveNote] = useState('');
+  const composerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setNotebookDraft(user.uid, draft);
@@ -116,11 +123,19 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
     setSaving(true);
     setError(null);
     setQueued(false);
+    setSaveNote('');
+    setSavedEntryId(null);
     const body = text.trim();
     const { entryId, outcome, final } = saveEntry(user, body);
-    const offerReflection = () => {
-      if (entryId && settingsReady && savedPreferences.autoReflect) {
-        setReflecting((current) => ({ ...current, [entryId]: { preferences: savedPreferences, autoStart: true } }));
+    // Acknowledged write: confirm it landed, mark the entry as new, and either
+    // auto-start the saved preference or point at the one useful next action.
+    const confirmSaved = () => {
+      if (entryId) {
+        setSavedEntryId(entryId);
+        setSaveNote('Saved. Your entry is in your notebook below — invite a reflection whenever you want one.');
+        if (settingsReady && savedPreferences.autoReflect) {
+          setReflecting((current) => ({ ...current, [entryId]: { preferences: savedPreferences, autoStart: true } }));
+        }
       }
     };
     let landed: SaveOutcome;
@@ -133,7 +148,7 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
       return;
     }
     if (landed === 'saved') {
-      offerReflection();
+      confirmSaved();
       setDraft((current) => (current === text ? '' : current));
       setPendingDraft(null);
       setSaving(false);
@@ -144,7 +159,7 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
     setQueued(true);
     setSaving(false);
     final.then(() => {
-      offerReflection();
+      confirmSaved();
       setQueued(false);
       setDraft((d) => (d === text ? '' : d));
       setPendingDraft(null);
@@ -153,6 +168,10 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
       setPendingDraft(body);
       setError(entrySaveCopy(e));
     });
+  }
+
+  function inviteReflection(entryId: string) {
+    setReflecting((current) => ({ ...current, [entryId]: { preferences, autoStart: false } }));
   }
 
   const usedBytes = new TextEncoder().encode(draft).length;
@@ -164,9 +183,13 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
       <div>
         <h2 className="page-title">Notebook</h2>
         <p className="page-sub">
-          Save a moment in your own words. Invite a reflection whenever you want one.
+          Write a moment in your own words, then save it. Nothing is sent to the AI until you invite a
+          reflection.
           {syncNote && ' (some entries are still syncing from offline)'}
         </p>
+
+        <NotebookGuide defaultOpen={entries.length === 0} />
+
         <details className="journal-preferences">
           <summary>Your reflection preferences</summary>
           {settingsReady && <>
@@ -204,15 +227,17 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
         )}
 
         {queued && !error && (
-          <p className="composer-hint" role="status" aria-live="polite" style={{ color: 'var(--ink-soft)' }}>
-            Still sending — kept on this device; it will sync when the connection returns.
+          <p className="save-status is-queued" role="status" aria-live="polite">
+            Still sending — kept on this device; it will sync when the connection returns. You can keep
+            writing while it waits.
           </p>
         )}
 
         <div className="composer">
           <textarea
+            ref={composerRef}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => { setDraft(e.target.value); setSaveNote(''); }}
             placeholder="Today, or this week — whatever is true. Plain text or markdown."
           />
           <div className="composer-bar">
@@ -225,21 +250,51 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
           </div>
         </div>
 
+        {saveNote && (
+          <p className="save-status" aria-live="polite">
+            {saveNote}
+          </p>
+        )}
+
         <WaitingTray desk={desk} refresh={refresh} />
 
         <div className="entry-list">
-          {entries.length === 0 && <p className="empty-note">No entries yet. The composer above is always open.</p>}
-          {entries.map((e) => (
-            <div className="entry-item" key={e.id}>
-              <div className="when">
-                {new Date(e.createdAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </div>
-              <div className="body">{e.bodyMd}</div>
-              {settingsReady && (reflecting[e.id]
-                ? <EntryReflection entryId={e.id} defaults={reflecting[e.id]!.preferences} autoStart={reflecting[e.id]!.autoStart} />
-                : <button className="btn-quiet" disabled={syncNote} onClick={() => setReflecting((current) => ({ ...current, [e.id]: { preferences, autoStart: false } }))}>Reflect on this</button>)}
+          {entries.length === 0 && (
+            <div className="entry-empty">
+              <p className="entry-empty-lead">No entries yet.</p>
+              <p className="composer-hint">
+                The composer above is always open. One sentence is enough to begin.
+              </p>
+              <button className="btn-quiet" onClick={() => composerRef.current?.focus()}>
+                Write your first entry
+              </button>
             </div>
-          ))}
+          )}
+          {entries.map((e) => {
+            const isNew = e.id === savedEntryId;
+            return (
+              <div className={`entry-item${isNew ? ' is-new' : ''}`} key={e.id}>
+                <div className="when">
+                  {new Date(e.createdAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  {isNew && <span className="entry-badge">Saved just now</span>}
+                </div>
+                <div className="body">{e.bodyMd}</div>
+                {settingsReady && (reflecting[e.id]
+                  ? <EntryReflection entryId={e.id} defaults={reflecting[e.id]!.preferences} autoStart={reflecting[e.id]!.autoStart} />
+                  : isNew
+                    ? (
+                      <div className="entry-next">
+                        <p className="entry-next-lead">Would you like an AI reflection on this entry?</p>
+                        <button className="btn-primary" onClick={() => inviteReflection(e.id)}>
+                          Invite a reflection on this entry
+                        </button>
+                        <p className="composer-hint">It reads only this entry, and you can disagree with it.</p>
+                      </div>
+                    )
+                    : <button className="btn-quiet" disabled={syncNote} onClick={() => inviteReflection(e.id)}>Reflect on this</button>)}
+              </div>
+            );
+          })}
         </div>
       </div>
 

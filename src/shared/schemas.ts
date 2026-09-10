@@ -206,7 +206,7 @@ export interface DeskPayload {
   correspondents: CorrespondentDoc[];
   waitingLetters: LetterDoc[]; // sealed letters
   recentLetters: LetterDoc[]; // most recent per correspondent, any status
-  composing: { cycleId: string; kind: string; startedAt: string }[];
+  composing: { cycleId: string; kind: string; startedAt: string; reflection?: boolean }[];
   // Letters that did not come through recently and have not been superseded by
   // a later letter from the same correspondent. Silent failure is the one
   // thing the Desk must never do.

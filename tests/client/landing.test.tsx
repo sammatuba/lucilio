@@ -56,6 +56,13 @@ describe('Landing (production redirect sign-in)', () => {
     expect(await screen.findByText(/Allow cookies and site data for this site/)).toBeTruthy();
   });
 
+  it('explains the practice before offering sign-in', () => {
+    render(<MemoryRouter><Landing /></MemoryRouter>);
+    expect(screen.getByText(/Write and save/)).toBeTruthy();
+    expect(screen.getByText(/reads only that entry/)).toBeTruthy();
+    expect(screen.getByText(/Optional: ask a correspondent/)).toBeTruthy();
+  });
+
   it('hands the click to the redirect sign-in', () => {
     render(<MemoryRouter><Landing /></MemoryRouter>);
     fireEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }));

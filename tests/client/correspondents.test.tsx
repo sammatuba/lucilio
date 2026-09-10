@@ -76,6 +76,11 @@ describe('Correspondents', () => {
     expect(screen.getAllByText(/^\d+ letters?$/).length).toBe(3);
   });
 
+  it('explains how a correspondence differs from a reflection', async () => {
+    mount(baseDesk());
+    expect(await screen.findByText(/A correspondence is optional and slower than a reflection/i)).toBeTruthy();
+  });
+
   it('the ask button posts to /api/letters/request', async () => {
     mount(baseDesk());
     const button = await screen.findByRole('button', { name: /Ask The Director to write/i });
