@@ -53,7 +53,7 @@ export default function EntryReflection({ entryId, defaults, autoStart = false }
         api.post(`/api/letters/${result.letterId}/open`).catch(() => undefined);
       } else {
         setCycleId(result.cycleId ?? null);
-        setNote('This reflection is already being prepared. Check again shortly; it will also appear on your Notebook.');
+        setNote('This reflection is being prepared. You can leave this page — it will be waiting in your notebook.');
       }
     } catch {
       setNote('The reflection is not available yet. Your entry is saved. Try again to check for a completed reflection or retry.');
@@ -66,15 +66,19 @@ export default function EntryReflection({ entryId, defaults, autoStart = false }
 
   return <section className="entry-reflection" aria-label="Reflect on this entry">
     <ReflectionControls value={preferences} onChange={(value) => { setPreferences(value); setLetter(null); }} disabled={busy || !!cycleId} compact />
-    <p className="composer-hint">AI reads this entry only. A reflection does not add to long-term memory.</p>
+    <p className="composer-hint">AI reads this entry only, and only when you ask. A reflection does not add to long-term memory.</p>
     <button className="btn-quiet" disabled={busy || !!cycleId} onClick={reflect}>{busy || cycleId ? 'Preparing your reflection…' : 'Reflect on this'}</button>
     {busy && <p role="status">Reading your entry and checking the response. There is no intentional delay.</p>}
     {note && <p role="status">{note}</p>}
     {letter && !closed && <>
+      <p className="reflection-arrived" role="status">Your reflection is ready.</p>
       <div className="letter-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(letter.bodyMd) }} />
       <p className="composer-hint">Based on this entry. An AI interpretation that you can disagree with.</p>
-      <button className="btn-quiet" onClick={() => setClosed(true)}>Finish for now</button>
-      <p className="composer-hint">If something does not fit, you can explore that in your next entry. The reflection remains in your archive.</p>
+      <div className="reflection-actions">
+        <button className="btn-quiet" onClick={() => setClosed(true)}>Finish for now</button>
+        <span className="composer-hint">Saved in your notebook. Write another entry whenever you want; the reflection stays here.</span>
+      </div>
+      <p className="composer-hint">If something does not fit, explore that in your next entry. The reflection remains in your archive.</p>
     </>}
   </section>;
 }

@@ -25,6 +25,17 @@ describe('Reflection invitation', () => {
     expect(screen.queryByText('One possible interpretation.')).toBeNull();
   });
 
+  it('announces a delivered reflection and says what is saved', async () => {
+    vi.mocked(api.post).mockResolvedValue({ state: 'delivered', letterId: 'letter-1' });
+    vi.mocked(api.get).mockResolvedValue({ bodyMd: 'An interpretation.', groundingRefs: [] });
+    render(<EntryReflection entryId="entry-1" defaults={DEFAULT_REFLECTION_PREFERENCES} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Reflect on this' }));
+    await screen.findByText('An interpretation.');
+    expect(screen.getByText('Your reflection is ready.')).toBeTruthy();
+    expect(screen.getByText(/Saved in your notebook\. Write another entry whenever you want/i)).toBeTruthy();
+    expect(api.post).toHaveBeenCalledWith('/api/letters/letter-1/open');
+  });
+
   it('reports generation failures without suggesting the saved entry was lost', async () => {
     vi.mocked(api.post).mockRejectedValue(new Error('network'));
     render(<EntryReflection entryId="entry-1" defaults={DEFAULT_REFLECTION_PREFERENCES} />);
