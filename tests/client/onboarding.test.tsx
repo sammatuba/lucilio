@@ -10,6 +10,14 @@ import { api } from '../../src/client/lib/api';
 import { saveEntry } from '../../src/client/lib/entrySave';
 beforeEach(() => { cleanup(); vi.resetAllMocks(); });
 
+it('frames onboarding as two steps and states what happens next', () => {
+  render(<MemoryRouter><Onboarding user={{ uid: 'first-user' } as User} onDone={() => undefined} /></MemoryRouter>);
+  expect(screen.getByText(/Step 1 of 2/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: /begin/i }));
+  expect(screen.getByText(/Step 2 of 2/)).toBeTruthy();
+  expect(screen.getByText(/What happens next/)).toBeTruthy();
+});
+
 it('waits for the first entry to sync and explicitly opts out of automatic letters', async () => {
   let finishSave!: () => void;
   vi.mocked(saveEntry).mockReturnValue({ outcome: Promise.resolve('queued'), final: new Promise<void>((resolve) => { finishSave = resolve; }) });

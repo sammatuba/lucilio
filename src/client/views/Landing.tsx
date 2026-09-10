@@ -42,6 +42,16 @@ export default function Landing() {
       <div className="card">
         <h1 className="sr-only">Lucilio</h1>
         <img src="/lockup.svg" alt="Lucilio: understand yourself in a changing world" className="landing-lockup" />
+
+        <div className="explainer landing-explainer">
+          <p>{PRACTICE_INTRO}</p>
+          <ol className="landing-steps">
+            <li><strong>Write and save</strong> a moment in your own words — privately.</li>
+            <li><strong>Invite a reflection</strong> when you want one; the AI reads only that entry.</li>
+            <li><strong>Optional: ask a correspondent</strong> for a weekly letter drawn from several entries.</li>
+          </ol>
+        </div>
+
         <button className="btn-primary" onClick={google} disabled={busy}>
           Sign in with Google
         </button>
@@ -57,10 +67,7 @@ export default function Landing() {
           </div>
         )}
         {error && <div className="save-error" style={{ marginTop: 20 }}>{error}</div>}
-        <div className="explainer">
-          <p>{PRACTICE_INTRO}</p>
-          <p><Link to="/about">About Lucilio: where the idea comes from</Link></p>
-        </div>
+        <p className="landing-about"><Link to="/about">About Lucilio: where the idea comes from</Link></p>
       </div>
     </div>
   );
