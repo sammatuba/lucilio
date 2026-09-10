@@ -638,6 +638,108 @@
   font-size: 16px;
 }
 
+/* Guided home: an orientation that folds away, a truthful save receipt, and a
+   single obvious next action on the entry that was just written. */
+.notebook-guide {
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 14px 20px;
+  margin: 0 0 24px;
+}
+
+.notebook-guide summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  padding: 2px 0;
+}
+
+.notebook-guide ol {
+  margin: 14px 0 4px;
+  padding-left: 20px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.notebook-guide li { margin-bottom: 8px; }
+
+.notebook-guide strong { color: var(--ink); }
+
+.save-status {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: #3d4a33;
+  background: #eef2e8;
+  border: 1px solid #b9c8a6;
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin: 0 0 26px;
+}
+
+.save-status.is-queued {
+  color: var(--ink-soft);
+  background: var(--paper-deep);
+  border-color: var(--rule);
+}
+
+.entry-item.is-new {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  background: linear-gradient(90deg, rgba(122, 74, 43, 0.05), transparent 60%);
+}
+
+.entry-badge {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-soft);
+  border-radius: 10px;
+  padding: 1px 9px;
+  vertical-align: middle;
+}
+
+.entry-next {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--paper-deep);
+  border-radius: 4px;
+}
+
+.entry-next-lead {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+
+.entry-next .composer-hint { margin: 10px 0 0; }
+
+.entry-empty {
+  border-bottom: 1px solid var(--rule);
+  padding: 22px 4px;
+}
+
+.entry-empty-lead {
+  font-size: 16px;
+  margin: 0 0 4px;
+  color: var(--ink-soft);
+}
+
+.entry-empty .composer-hint { margin: 0 0 12px; }
+
+.aside-note {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 8px 0 18px;
+}
+
 /* ---------- study ---------- */
 
 .volumes {

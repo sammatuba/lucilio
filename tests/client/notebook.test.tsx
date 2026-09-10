@@ -172,6 +172,7 @@ describe('Notebook composer integrity (§2.8, M1-6)', () => {
 
     const note = await screen.findByRole('status');
     expect(note.textContent).toMatch(/kept on this device/i);
+    expect(note.textContent).toMatch(/keep writing/i);
     expect(value()).toBe('Kept on this device.');
 
     await act(async () => {
@@ -246,6 +247,51 @@ describe('Notebook composer integrity (§2.8, M1-6)', () => {
     fireEvent.click(screen.getByRole('button', { name: /retry save/i }));
     expect(saveEntryMock).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(value()).toBe(''));
+  });
+});
+
+describe('Notebook guides the reader (GLM UX recovery)', () => {
+  it('the empty notebook explains the three moves and offers a way to begin', async () => {
+    mount();
+    expect(screen.getByText(/New here\? How Lucilio works/i)).toBeTruthy();
+    expect(screen.getByText(/Write and save\./i)).toBeTruthy();
+    expect(screen.getByText(/Invite a reflection when you want one\./i)).toBeTruthy();
+    expect(screen.getByText(/Optional: ask a correspondent for a letter\./i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /write your first entry/i })).toBeTruthy();
+  });
+
+  it('a confirmed save is announced and offers one clear next action', async () => {
+    saveEntryMock.mockReturnValue({
+      entryId: 'entry-1',
+      outcome: Promise.resolve('saved'),
+      final: Promise.resolve(),
+    });
+    mount();
+    type('A first honest sentence.');
+    fireEvent.click(screen.getByRole('button', { name: /save entry/i }));
+
+    await screen.findByText(/Saved\. Your entry is in your notebook below/i);
+    act(() =>
+      snapshotNext({
+        docs: [{ data: () => ({ id: 'entry-1', bodyMd: 'A first honest sentence.', createdAt: new Date().toISOString() }) }],
+        metadata: { hasPendingWrites: false },
+      }),
+    );
+
+    expect(screen.getByText('Saved just now')).toBeTruthy();
+    const invite = screen.getByRole('button', { name: /invite a reflection on this entry/i });
+    // The reflection is invite-only: presenting the action must not send anything.
+    expect(api.post).not.toHaveBeenCalled();
+
+    fireEvent.click(invite);
+    expect(await screen.findByRole('button', { name: 'Reflect on this' })).toBeTruthy();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('the aside frames correspondence as optional and different from a reflection', async () => {
+    mount();
+    await waitFor(() => expect(screen.getByText('Remember preferences')).toBeTruthy());
+    expect(screen.getByText(/Optional\. A correspondence is a slower rhythm than a reflection/i)).toBeTruthy();
   });
 });
 

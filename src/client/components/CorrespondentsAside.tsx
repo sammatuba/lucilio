@@ -14,6 +14,11 @@ export default function CorrespondentsAside({ desk, refresh }: { desk: DeskPaylo
   return (
     <aside className="desk-aside">
       <h3>Your correspondents</h3>
+      <p className="aside-note">
+        Optional. A correspondence is a slower rhythm than a reflection: you ask a correspondent, and
+        they write a weekly letter drawn from several entries. You can ignore this entirely and still
+        keep a journal.
+      </p>
       {correspondents.map((c) => {
         const card = CORRESPONDENT_CARDS[c.cid];
         const concluded = c.status === 'concluded';
