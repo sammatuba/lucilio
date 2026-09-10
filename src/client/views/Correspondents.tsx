@@ -53,11 +53,14 @@ export default function Correspondents({ desk, refresh }: { desk: DeskPayload | 
     <>
       <h2 className="page-title">Correspondents</h2>
       <p className="page-sub">
-        Ask for a letter from your <Link to="/">Notebook</Link>; here you can read each volume or end a correspondence.
+        These are the people who write to you. A correspondence is optional and slower than a
+        reflection: a reflection reads one entry you choose, while a correspondent writes a weekly
+        letter drawn from several.
       </p>
-      <p className="page-sub">
-        The people who write to you. Ask any of them for a letter, read what they have written, or end a
-        correspondence when it has run its course.
+      <p className="composer-hint" style={{ marginBottom: 26 }}>
+        Ask a correspondent for a letter here or from your <Link to="/">Notebook</Link> — once per
+        correspondent per day. Read each volume below, or end a correspondence when it has run its
+        course.
       </p>
 
       {error && <div className="save-error">{error}</div>}
