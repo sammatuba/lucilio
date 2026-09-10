@@ -760,6 +760,13 @@
 
 .reflection-actions .composer-hint { margin: 0; }
 
+.tray-note {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  margin: -14px 0 18px;
+}
+
 /* ---------- study ---------- */
 
 .volumes {

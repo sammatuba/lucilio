@@ -68,6 +68,7 @@ export function deskRouter(deps: RouteDeps): Router {
         cycleId: c.id,
         kind: c.kind,
         startedAt: c.createdAt,
+        reflection: !!c.reflection,
       }));
 
       const today = isoDateInTz(new Date(), profile.tz);

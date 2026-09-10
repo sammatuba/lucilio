@@ -57,6 +57,28 @@ describe('WaitingTray', () => {
     expect(screen.getByText(/first letters are being written/i)).toBeTruthy();
   });
 
+  it('a reflection in progress is named as a reflection, not a letter', () => {
+    mount(
+      baseDesk({
+        composing: [
+          { cycleId: 'reflection-abc', kind: 'requested', startedAt: new Date().toISOString(), reflection: true },
+        ],
+      }),
+    );
+    expect(screen.getByText(/Your reflection is being prepared/i)).toBeTruthy();
+  });
+
+  it('reassures that waiting needs nothing from the reader', () => {
+    mount(
+      baseDesk({
+        waitingLetters: [
+          { id: 'l1', cid: 'director', status: 'sealed', createdAt: new Date().toISOString() } as never,
+        ],
+      }),
+    );
+    expect(screen.getByText(/Nothing is required of you here/i)).toBeTruthy();
+  });
+
   it('undelivered letters are named in voice, with the ask-again note', () => {
     mount(
       baseDesk({

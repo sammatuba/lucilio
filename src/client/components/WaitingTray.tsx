@@ -36,15 +36,24 @@ export default function WaitingTray({ desk, refresh }: { desk: DeskPayload | nul
     <div className="waiting-tray">
       <h3 className="page-title" style={{ fontSize: 20 }}>{heading}</h3>
 
+      {(composing.length > 0 || waiting.length > 0) && undelivered.length === 0 && (
+        <p className="tray-note">
+          Nothing is required of you here — this part arrives on its own. Sealed letters wait until you
+          open them.
+        </p>
+      )}
+
       {composing.length > 0 && (
         <div className="composing-note" style={{ marginBottom: 18 }}>
           {composing.map((c) => (
             <div key={c.cycleId}>
-              {c.kind === 'welcome'
-                ? 'Your first letters are being written. Your correspondents are reading your first entry — this takes a few minutes, and the letters arrive here together.'
-                : c.kind === 'concluding'
-                  ? 'A final letter is being written…'
-                  : 'Your response is being prepared and checked. It will appear here as soon as it is ready.'}
+              {c.reflection
+                ? 'Your reflection is being prepared. It will appear here as soon as it is ready.'
+                : c.kind === 'welcome'
+                  ? 'Your first letters are being written. Your correspondents are reading your first entry — this takes a few minutes, and the letters arrive here together.'
+                  : c.kind === 'concluding'
+                    ? 'A final letter is being written…'
+                    : 'Your response is being prepared and checked. It will appear here as soon as it is ready.'}
             </div>
           ))}
         </div>
