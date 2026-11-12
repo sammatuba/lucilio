@@ -1,0 +1,27 @@
+{
+  "$schema": "meos-repo.v1",
+  "version": 1,
+  "id": "lucilio",
+  "repo_id": "47cb7373-50a6-4132-ac3a-c849ddbf59b8",
+  "runtime": {
+    "mode": "codex"
+  },
+  "skills_ignored_directories": [],
+  "files": {
+    ".meos/runtime.py": "436839199300bec5a358dfe268e510eb9a553e3f432a3715a35b3d2f7c879793",
+    ".meos/lifecycle.md": "f80e8b964bce25061890df18329bb577a2ae52f3730638f61dc80dc5e2657c4c",
+    "meos": "6f9445a132159cb9bbf4bfb58e7bd98f6f8e76cc64f66e3f1f39c75bd0fe4b92",
+    ".meos/meos-dsh-update.sh": "e0440dce58aea1f16b867dfdf371aefd5cd66443f1728e1d4111e1cb04505943",
+    ".agents/skills/meos-strategy/SKILL.md": "535d020548b2e6bcfbf6b15170bff3066e764837adac831f08f6d00fd433a922",
+    ".claude/skills/meos-strategy/SKILL.md": "535d020548b2e6bcfbf6b15170bff3066e764837adac831f08f6d00fd433a922",
+    ".agents/skills/meos-intent/SKILL.md": "7c2b4b4245537b6959f3cd4b4858fe84376ee53876a749d627e1c4cf8d8510f9",
+    ".claude/skills/meos-intent/SKILL.md": "7c2b4b4245537b6959f3cd4b4858fe84376ee53876a749d627e1c4cf8d8510f9",
+    ".agents/skills/meos-implement/SKILL.md": "22081fe83680768f675cc228b361cd5e18c694978533f1551de85b2c29bd927a",
+    ".claude/skills/meos-implement/SKILL.md": "22081fe83680768f675cc228b361cd5e18c694978533f1551de85b2c29bd927a",
+    ".agents/skills/meos-review/SKILL.md": "1de7653cde97669b39c58c3fcc503b722af16799207d459911cb0ac3020aa577",
+    ".claude/skills/meos-review/SKILL.md": "1de7653cde97669b39c58c3fcc503b722af16799207d459911cb0ac3020aa577",
+    ".agents/skills/meos-wrapup/SKILL.md": "32d343de8d102c8f16ea4291e4f410949844cf7afbc4298266910b2be6ea32cb",
+    ".claude/skills/meos-wrapup/SKILL.md": "32d343de8d102c8f16ea4291e4f410949844cf7afbc4298266910b2be6ea32cb",
+    ".claude/settings.json": "7af571bc35483e90192412e5cb186b3f6afa28afde77760f56990370a0f70368"
+  }
+}
