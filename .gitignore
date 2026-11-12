@@ -33,3 +33,30 @@ rules-disc.tmp.json
 
 # Local process documents (handover, roadmap, plans, submission sheets): kept on disk, never pushed
 docs-local/
+
+# MEOS-REPO:START
+# Track the installed contract/runtime; keep session state local.
+!/.meos/
+/.meos/*
+!/.meos/repo.json
+!/.meos/runtime.py
+!/.meos/lifecycle.md
+!/.meos/meos-dsh-update.sh
+!/meos
+# MEOS-REPO:END
+
+# MEOS-SKILLS:START
+# Track portable Codex skill entrypoints.
+!/.agents/
+!/.agents/skills/
+!/.agents/skills/meos-strategy/
+!/.agents/skills/meos-strategy/SKILL.md
+!/.agents/skills/meos-intent/
+!/.agents/skills/meos-intent/SKILL.md
+!/.agents/skills/meos-implement/
+!/.agents/skills/meos-implement/SKILL.md
+!/.agents/skills/meos-review/
+!/.agents/skills/meos-review/SKILL.md
+!/.agents/skills/meos-wrapup/
+!/.agents/skills/meos-wrapup/SKILL.md
+# MEOS-SKILLS:END
