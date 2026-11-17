@@ -72,6 +72,8 @@ const paths = {
   correspondent: (uid: string) => `users/${uid}/correspondents/director`,
   memory: (uid: string) => `users/${uid}/correspondents/director/memory/0001`,
   exportDoc: (uid: string) => `users/${uid}/exports/x1`,
+  inquiry: (uid: string) => `users/${uid}/inquiries/i1`,
+  inquiryWriting: (uid: string) => `users/${uid}/inquiryWritings/w1`,
 };
 
 beforeAll(async () => {
@@ -95,6 +97,8 @@ beforeAll(async () => {
     await db.doc(paths.correspondent(OWNER)).set({ cid: 'director', cardVersion: 1, status: 'active', activatedAt: NOW });
     await db.doc(paths.memory(OWNER)).set({ version: 1, createdAt: NOW, themesObserved: [], openThreads: [], exercisesGiven: [], toneCalibration: '', retiredItems: [], letterCount: 1 });
     await db.doc(paths.exportDoc(OWNER)).set({ createdAt: NOW, collections: [] });
+    await db.doc(paths.inquiry(OWNER)).set({ id: 'i1', question: 'What is a good life?', readingId: null, parentId: null, nodeIds: [], status: 'active', revision: 0, createdAt: NOW, updatedAt: NOW });
+    await db.doc(paths.inquiryWriting(OWNER)).set({ id: 'w1', inquiryId: 'i1', bodyMd: 'A private thought.', mode: 'reflection', revisesId: null, sourceNodeId: null, createdAt: NOW });
   });
 });
 
@@ -195,6 +199,21 @@ serverOwnedSuite('cycles', paths.cycle, { kind: 'scheduled', state: 'composing' 
 serverOwnedSuite('correspondents', paths.correspondent, { status: 'active', cardVersion: 1 });
 serverOwnedSuite('correspondent memory', paths.memory, { version: 2, themesObserved: [] });
 serverOwnedSuite('exports', paths.exportDoc, { createdAt: NOW });
+
+// Inquiry data is API-only, including for its owner. Keep the default-deny
+// rules unchanged; seeded documents prove these are authorization failures.
+for (const [label, pathFor] of [['inquiries', paths.inquiry], ['inquiryWritings', paths.inquiryWriting]] as const) {
+  suite(`${label} (API-only: all direct client access denied)`, () => {
+    for (const [who, context] of [['owner', owner], ['stranger', stranger], ['unauthenticated', anon]] as const) {
+      check(`${who} cannot read`, () => assertFails(context().doc(pathFor(OWNER)).get()));
+      check(`${who} cannot list`, () => assertFails(context().collection(`users/${OWNER}/${label}`).get()));
+      check(`${who} cannot create`, () => assertFails(context().doc(`users/${OWNER}/${label}/new`).set({ id: 'new', createdAt: NOW })));
+      check(`${who} cannot replace`, () => assertFails(context().doc(pathFor(OWNER)).set({ id: 'changed' })));
+      check(`${who} cannot update`, () => assertFails(context().doc(pathFor(OWNER)).update({ bodyMd: 'changed' })));
+      check(`${who} cannot delete`, () => assertFails(context().doc(pathFor(OWNER)).delete()));
+    }
+  });
+}
 
 // ---- default deny everywhere else ----
 

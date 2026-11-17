@@ -12,7 +12,8 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const tools = resolve('.tools');
-const jdkDir = existsSync(tools) ? readdirSync(tools).find((d) => d.startsWith('jdk-')) : undefined;
+const javaBinary = process.platform === 'win32' ? 'java.exe' : 'java';
+const jdkDir = existsSync(tools) ? readdirSync(tools).find((d) => d.startsWith('jdk-') && existsSync(resolve(tools, d, 'bin', javaBinary))) : undefined;
 const sep = process.platform === 'win32' ? ';' : ':';
 
 if (jdkDir) {

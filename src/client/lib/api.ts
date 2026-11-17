@@ -2,10 +2,11 @@
 // and, when App Check is initialized, an attestation token header.
 import { auth, appCheck } from './firebase';
 import { getToken as getAppCheckToken } from 'firebase/app-check';
+import { onAuthStateChanged } from 'firebase/auth';
+import { exportInquiryDrafts } from './inquiryDraft';
 
-async function headers(): Promise<Record<string, string>> {
+async function headers(user = auth.currentUser): Promise<Record<string, string>> {
   const h: Record<string, string> = { 'Content-Type': 'application/json' };
-  const user = auth.currentUser;
   if (user) h.Authorization = `Bearer ${await user.getIdToken()}`;
   if (appCheck) {
     try {
@@ -64,15 +65,40 @@ export async function getBlob(path: string): Promise<Blob> {
 
 // Authenticated file download (export).
 export async function downloadExport(): Promise<void> {
-  const res = await fetch('/api/export', { headers: await headers() });
-  if (!res.ok) throw new ApiError(res.status, 'export failed');
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `lucilio-export-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  const user = auth.currentUser;
+  if (!user) throw new ApiError(401, 'Sign in to export your data.');
+  // Keep this operation bound to one session, even if that account signs back in.
+  let accountChanged = false;
+  const unsubscribe = onAuthStateChanged(auth, (current) => {
+    if (current !== user) accountChanged = true;
+  });
+  function assertCurrentUser() {
+    if (accountChanged || auth.currentUser !== user) {
+      throw new Error('Your account changed. Start a new export for your current account.');
+    }
+  }
+  try {
+    const exportHeaders = await headers(user);
+    assertCurrentUser();
+    const res = await fetch('/api/export', { headers: exportHeaders });
+    assertCurrentUser();
+    if (!res.ok) throw new ApiError(res.status, 'export failed');
+    const data = await res.json() as Record<string, unknown>;
+    assertCurrentUser();
+    const localInquiryDrafts = exportInquiryDrafts(user.uid);
+    const blob = new Blob([JSON.stringify({ ...data, localInquiryDrafts }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    try {
+      a.href = url;
+      a.download = `lucilio-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  } finally {
+    unsubscribe();
+  }
 }

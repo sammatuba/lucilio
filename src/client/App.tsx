@@ -18,6 +18,10 @@ import Settings from './views/Settings';
 import AccountMenu from './components/AccountMenu';
 import About from './views/About';
 import { CompassIcon, NotebookIcon } from './components/icons';
+import Practice from './views/Practice';
+import Inquiry from './views/Inquiry';
+import Philosophy from './views/Philosophy';
+import Reading from './views/Reading';
 
 export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -34,7 +38,7 @@ export default function App() {
       </Routes>
     );
   }
-  return <Shell user={user} />;
+  return <Shell key={user.uid} user={user} />;
 }
 
 function Shell({ user }: { user: User }) {
@@ -82,8 +86,9 @@ function Shell({ user }: { user: User }) {
           <span className="sr-only">Lucilio</span>
         </NavLink>
         <nav className="nav">
-          <NavLink to="/" end aria-label="Notebook"><NotebookIcon /><span className="nav-label">Notebook</span></NavLink>
-          <NavLink to="/atlas" aria-label="Atlas"><CompassIcon /><span className="nav-label">Atlas</span></NavLink>
+          <NavLink to="/" end aria-label="Practice"><span>Practice</span></NavLink>
+          <NavLink to="/philosophy" aria-label="Philosophy map"><CompassIcon /><span className="nav-label">Philosophy</span></NavLink>
+          <NavLink to="/notebook" aria-label="Notebook"><NotebookIcon /><span className="nav-label">Notebook</span></NavLink>
         </nav>
         <AccountMenu user={user} />
       </header>
@@ -105,13 +110,16 @@ function Shell({ user }: { user: User }) {
       )}
 
       <Routes>
-        <Route path="/" element={guard(<Notebook user={user} desk={desk} refresh={loadDesk} />)} />
+        <Route path="/" element={guard(<Practice />)} />
+        <Route path="/philosophy" element={guard(<Philosophy />)} />
+        <Route path="/read/:id" element={guard(<Reading />)} />
+        <Route path="/inquiry/:id" element={guard(<Inquiry user={user} />)} />
         <Route
           path="/onboarding"
           element={desk?.profile.onboarded ? <Navigate to="/" replace /> : <Onboarding user={user} onDone={onOnboarded} />}
         />
         <Route path="/letter/:id" element={guard(<LetterView />)} />
-        <Route path="/notebook" element={<Navigate to="/" replace />} />
+        <Route path="/notebook" element={guard(<Notebook user={user} desk={desk} refresh={loadDesk} />)} />
         <Route path="/desk" element={<Navigate to="/" replace />} />
         <Route path="/correspondents" element={guard(<Correspondents desk={desk} refresh={loadDesk} />)} />
         <Route path="/correspondents/:cid" element={guard(<StudyThread />)} />

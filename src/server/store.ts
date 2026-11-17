@@ -323,10 +323,10 @@ export async function requestedCyclesToday(uid: string, cid: CorrespondentId): P
 // ---- export / delete ----
 
 export async function exportSubtree(uid: string): Promise<Record<string, unknown>> {
-  const out: Record<string, unknown> = { exportedAt: nowIso(), profile: null, notebook: [], replies: [], letters: [], cycles: [], correspondents: [] };
+  const out: Record<string, unknown> = { exportedAt: nowIso(), profile: null, notebook: [], replies: [], letters: [], cycles: [], correspondents: [], inquiries: [], inquiryWritings: [] };
   const profile = await getProfile(uid);
   out.profile = profile;
-  const simple = ['notebook', 'replies', 'letters', 'cycles'] as const;
+  const simple = ['notebook', 'replies', 'letters', 'cycles', 'inquiries', 'inquiryWritings'] as const;
   for (const name of simple) {
     const snap = await col(uid, name).orderBy('createdAt', 'asc').get().catch(async () => {
       const s2 = await col(uid, name).get();

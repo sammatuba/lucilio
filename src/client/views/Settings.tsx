@@ -28,6 +28,7 @@ export default function Settings({ user }: { user: User }) {
   const [deleteTyped, setDeleteTyped] = useState('');
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -76,12 +77,19 @@ export default function Settings({ user }: { user: User }) {
 
   async function deleteAccount() {
     setDeleteBusy(true);
+    setDeleteError(null);
     try {
       await api.del('/api/account');
-      await signOut();
     } catch (e) {
       setDeleteError(accountDeleteCopy(e));
       setDeleteBusy(false);
+      return;
+    }
+    setConfirmDelete(false);
+    try {
+      await signOut({ discardDrafts: true, user });
+    } catch {
+      setDeleteError('Your account was deleted, but signing out of this device did not finish. Try signing out again. If local drafts remain, clear this site’s data in your browser settings.');
     }
   }
 
@@ -142,21 +150,23 @@ export default function Settings({ user }: { user: User }) {
 
       <div className="trust-section">
         <h3>Your data</h3>
+        <p>Export includes saved inquiries, writing and revisions, Notebook entries, and unsaved inquiry drafts on this device. Device drafts are cleared when you sign out; save or export them first.</p>
         <p style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button className="btn-quiet" onClick={() => downloadExport()}>Export my data</button>
-          <button className="btn-danger" onClick={() => setConfirmDelete(true)}>Delete account</button>
+          <button className="btn-quiet" onClick={() => { setExportError(''); void downloadExport().catch(() => setExportError('The export could not be completed. Your writing has not been changed. Try again before signing out.')); }}>Export my data</button>
+          <button className="btn-danger" disabled={deleteBusy} onClick={() => setConfirmDelete(true)}>Delete account</button>
         </p>
+        {exportError && <p className="save-error" role="alert">{exportError}</p>}
       </div>
 
-      {deleteError && <div className="save-error">{deleteError}</div>}
+      {deleteError && <div className="save-error" role="alert">{deleteError}</div>}
 
       {confirmDelete && (
         <div className="modal-backdrop" onClick={() => !deleteBusy && setConfirmDelete(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Delete everything?</h3>
             <p style={{ color: 'var(--ink-soft)', fontSize: 14.5 }}>
-              Your notebook, letters, replies, and memory are all erased — a full cascade delete — and the
-              account itself is removed. This cannot be undone. Consider exporting first.
+              Your inquiries, writing, notebook, letters, replies, and memory are all erased — a full cascade delete — and the
+              account itself is removed. Unsaved drafts on this device will also be discarded. This cannot be undone. Consider exporting first.
             </p>
             <label>
               Type <strong>delete</strong> to confirm

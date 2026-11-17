@@ -2,17 +2,16 @@
 
 **Understand yourself in a changing world.**
 
-Lucilio is a reflective journal that lets you choose when AI reads your words and
-how deeply it responds. Saving and reflecting are separate actions. A response can
-be Gentle, Reflective, Exploratory, or Philosophical; interests and respectful
-challenge are optional. A session can end after saving, reading, or declining a
-reflection.
+Lucilio is a reading-first practice for thinking deeply through philosophy. Read a
+substantial essay, follow your own question, explore competing perspectives, and
+write reflections, arguments, and revisions without losing earlier versions.
+Structure the practice, not the destination: AI safety can be an entry point, but
+personal questions can lead anywhere.
 
-The **Notebook** and invited reflection are the primary experience. The **Atlas**
-is optional material for looking outward before returning to writing. Weekly
-correspondence and its Correspondents archive remain available as a secondary practice and
-are off by default for new users. See the About page in the app for the product direction
-for implementation, validation, deployment status, and remaining work.
+**Practice** is home; the **Philosophy** map and **Notebook** are directly available
+in the navigation. The new inquiry practice works without AI. Optional Notebook
+reflection, the **Atlas**, and weekly correspondence remain available separately;
+automatic reflection and weekly letters are off by default for new users.
 
 Built for the **Google Cloud Run AI challenge** ("Build a User-Authenticated AI Application"): Firebase Auth + Gemini + Firestore + Cloud Run, deployed as a single service.
 
@@ -20,7 +19,9 @@ Live at **https://lucilio-journal.firebaseapp.com**.
 
 ## Not a typical journaling app
 
-What makes it different from a typical journaling app is the tradition it keeps. Seneca prescribed a nightly review of the day; Marcus Aurelius kept a notebook addressed to himself; Epicurus and Seneca taught through letters, because a letter makes you set your thoughts in order for someone who is not in the room; Montaigne turned the practice into the essay. Writing came first, judgment came later, and the writer stayed the judge. A chat box under a journal entry breaks that: it answers before you have finished thinking and from outside your own words. Lucilio keeps the shape. Saving sends nothing to a model until you press Reflect; you set the depth and whether challenge is welcome; every reflection must quote your own phrases, verified by the server, and pass a second safety review; there is no chat, feed, streak, or notification; weekly letters arrive on a post day and can be ended on purpose; a curated Atlas turns the practice outward as the Stoics did; and your data can be exported or deleted in full, with a Trust Center that shows the evidence.
+Reading gives you something to think with before asking you to write. The first edition offers six original editorial essays, sixteen philosophical entry points, and twenty-six explained relationships, with sources and explicit limits. It is an introductory collection, not a complete history or expert-reviewed curriculum. A suggested 150-minute weekly rhythm leaves room for several reflections, a careful argument, and revision; there are no deadlines, streaks, or required conclusions.
+
+Inquiry writing is not sent to models or weekly correspondents. You can explicitly copy a selected piece into the Notebook, where existing reflection and correspondence preferences apply. The Notebook supports optional automatic reflection as well as separately invited responses. Reading, inquiry creation, branching, and saving inquiry writing do not invoke Gemini.
 
 ## Google Cloud services used
 
@@ -59,10 +60,16 @@ What makes it different from a typical journaling app is the tradition it keeps.
 
 ## The product
 
-You write privately in the **Notebook** whenever you like. Saving alone does not
-ask AI to read the entry unless you explicitly enable automatic reflection. From a
-saved entry you can invite one response at the depth you choose, finish reading,
-and continue with an ordinary journal entry.
+Begin in **Practice** with a reading or your own question. An inquiry can hold
+multiple reflections, arguments, questions, and linked revisions. Branching keeps
+the original question and writing intact; pause or resume whenever you want.
+The **Philosophy** map supports broad exploration without research-topic filters
+or locked pathways. Sources and relationship explanations distinguish editorial
+comparisons from historical claims.
+
+The separate **Notebook** remains available whenever you want it. Saving alone
+does not ask AI to read an entry unless you explicitly enable automatic reflection.
+From a saved entry you can invite one response at the depth you choose.
 
 The **Atlas** is a curated, read-only set of sourced plates. “Write from this”
 returns a prompt to the Notebook; Atlas reads do not invoke Gemini. Weekly letters
@@ -74,7 +81,9 @@ are an optional, compatible practice with three correspondents:
 | **The Future Self** | A letter from who your notebook implies you are becoming. Every forward-looking claim traces to a cited entry and carries a plain **extrapolation label** — never a prediction or prophecy. | Future-self continuity research |
 | **The Foreign Correspondent** | Dispatches connecting your current thinking to the wider world — books, fields, historical parallels. Max 2–3 connections per letter, each tied to something you actually wrote; claims dated, sources never invented. | The wider world of ideas |
 
-**Surfaces:** the **Notebook** (home: composer, a "Waiting for you" tray of sealed and recent letters, your entries with invited reflection, and an aside listing your correspondents and the door to the Atlas) · the **Letter** (read + reply) · **Correspondents** (one bound volume per correspondence; ending a correspondence lives here, behind "More") · the **Atlas** (a small, curated library of places, ideas, works, and lives — sourced essays, a cinematic Street-View vantage of each subject, and an opt-in "Write from this" bridge to the Notebook; a table of contents, never a feed) · **Settings** (display name, reflection preferences, export, delete), the **Trust Center** (everything verifiable about how your words are kept and used), and **About**, all reached from the account menu under your name in the top bar.
+**Primary navigation:** **Practice** (`/`) for reading invitations and saved inquiries; **Philosophy** (`/philosophy`) for the searchable source map; **Notebook** (`/notebook`) for journal entries, invited reflection, and the correspondence tray. Readings and inquiries have their own deep links. The account menu retains **Atlas**, **Settings**, **Trust Center**, and **About**; correspondence volumes and letters remain reachable from the Notebook. Atlas offers sourced plates and an opt-in “Write from this” bridge to the Notebook.
+
+New users can choose **Open my practice — read first** without writing an entry or generating welcome letters. **Begin with writing instead** preserves the optional Notebook route. Export includes saved inquiries, revisions, and the current account’s unsaved inquiry drafts on this device. Draft cleanup on sign-out or account deletion requires working browser storage; failures show recovery guidance rather than claiming erasure succeeded.
 
 Every correspondent is an **AI instrument for a reflective practice, not a person**. This is stated in their own words on the onboarding screen and in every persona, and it is enforced as a testable requirement, not a vibe (see the eval suite below).
 
@@ -303,14 +312,14 @@ Beyond the codelab baseline (Firebase Auth + Gemini multi-turn + Firestore + Sec
 
 All steps below assume the local dev stack (`npm run dev`, client at http://localhost:5173). In production, replace the emulator dev sign-in with real one-click Google sign-in; everything else is identical.
 
-> Walkthrough note (2026-09-07): the "Desk" is now the tray at the top of the Notebook home, and "the Study" is now the Correspondents page. Steps below read with that substitution.
+> Practice is now home. The former “Desk” tray remains in the Notebook at `/notebook`; the former “Study” is the Correspondents page. Weekly letters require an explicit opt-in or request.
 
-### US-1 — Sign in with Google, land on the Notebook; sign out; session survives refresh
+### US-1 — Sign in, open Practice, and preserve the session across refresh
 
-1. Start the stack (`npm run dev`) and open http://localhost:5173. You see the landing page with "Sign in with Google". (In production this is the real Google popup; locally, the emulator offers a dev sign-in.)
-2. Enter a name in the dev sign-in field and continue. You are signed in and land in the app.
-3. Reload the page. You remain signed in (`onAuthStateChanged` restores the session from persistence — no extra sign-in).
-4. Click **Sign out** in the header. You return to the landing page and can no longer reach any app route.
+1. Start the stack (`npm run dev`) and open http://localhost:5173. The landing page offers Google sign-in; production uses a redirect, while the emulator offers dev sign-in.
+2. Enter a name in the dev sign-in field. New users can open Practice directly from reading-first onboarding without writing.
+3. Reload. Firebase restores the signed-in session.
+4. Choose **Sign out** from the account menu. If inquiry drafts exist, cancel to preserve them or confirm their discard; storage failures offer warned recovery. Successful sign-out returns to the landing page.
 
 ### US-2 — Write notebook entries; writes verified before the composer clears; Retry on failure
 
@@ -348,12 +357,13 @@ All steps below assume the local dev stack (`npm run dev`, client at http://loca
 3. When done, the letter appears sealed on the waiting tray.
 4. Ask the same correspondent again the same day: it is refused (one requested letter per correspondent per day) — a cadence cap for psychological safety, not scarcity.
 
-### US-7 — Onboarding: practice intro → meet the circle → first entry → welcome cycle
+### US-7 — Reading-first onboarding → inquiry → writing and revision
 
-1. Sign in as a **fresh** user (dev sign-in with a new name). You land on **Onboarding**: one screen explaining the practice.
-2. Read the three correspondent cards. Each self-describes in a paragraph, and each includes one plain sentence disclosing that it is **an AI instrument for a reflective practice, not a person**.
-3. Click **Begin — write a first entry**, write a few sentences, and send.
-4. Onboarding completes (timezone auto-detected, post day Sunday), and a **welcome cycle** runs: the waiting tray fills with the correspondents' first sealed welcome letters.
+1. Sign in as a **fresh** user. Read the practice introduction and choose **Open my practice — read first**. No entry or model response is required; welcome and weekly letters remain off.
+2. Open an essay, inspect its sources and counterpoint, then start an inquiry with your own question.
+3. Save a reflection, choose **Revise this piece**, and save a revision. Both versions remain visible. Reload with an unsaved draft and verify the text survives on this device.
+4. Branch to a personal question, explore and explicitly keep a philosophical connection, then pause and resume the inquiry. No research topic limits the path.
+5. Alternatively, choose **Begin with writing instead** during onboarding to enter through the Notebook.
 
 ### US-8 — Conclude a correspondence: final letter, then a bound read-only volume
 
@@ -364,16 +374,16 @@ All steps below assume the local dev stack (`npm run dev`, client at http://loca
 
 ### US-9 — Export everything; delete account with full cascade
 
-1. Go to **Trust Center** → "Your data, your rights".
-2. Click **Export everything (JSON)**: a file downloads containing your profile, notebook, replies, letters, cycles, and correspondents — your whole subtree.
-3. Click **Delete account and all data**, read the confirmation copy, and confirm.
-4. The cascade deletes every document under `users/{uid}/…` **and removes the Auth user**; you are signed out to the landing page. (Proven end-to-end by the cascade integration test over real HTTP.)
+1. Go to **Settings** → **Your data**.
+2. Choose **Export my data**. The download includes saved inquiries and writing/revision links, Notebook and correspondence data, and the initiating account’s device-local inquiry drafts. Changing accounts during export aborts the download.
+3. Choose **Delete account**, read the disclosure, and type **delete** to confirm.
+4. Server deletion removes the user subtree and Auth user. Device cleanup targets the deleted account even if the current sign-in changed; storage failures warn about remaining local data without cancelling an already-completed deletion.
 
 ### US-10 — Trust Center: rules evidence, pinned models, App Check mode, memory log
 
 1. Go to **Trust Center** while signed in.
-2. Verify it renders: the security-rules unit-test results (**64/64** with per-category counts), the **pinned model ladder**, the **App Check mode**, the **append-only memory version log**, and the rate-limit table.
-3. Verify the egress statement: *"Nothing has ever left your vault: this app makes no third-party calls except Gemini, through our own server."*
+2. Verify it renders the current generated security-rules results (**100/100** after the inquiry additions), the **pinned model ladder**, the **App Check mode**, the **append-only memory version log**, and the rate-limit table.
+3. Inspect the data-use disclosures. Firebase provides authentication/storage; opted-in AI features use Gemini through the server; optional Atlas imagery uses Google Maps. Reading and inquiry writing do not invoke a model.
 4. Note the cadence-cap explanation: limits are psychological safety, and there is no notification channel of any kind.
 
 ## Deployment to Cloud Run

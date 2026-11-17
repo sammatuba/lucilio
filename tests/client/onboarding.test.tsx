@@ -10,9 +10,19 @@ import { api } from '../../src/client/lib/api';
 import { saveEntry } from '../../src/client/lib/entrySave';
 beforeEach(() => { cleanup(); vi.resetAllMocks(); });
 
-it('frames onboarding as two steps and states what happens next', () => {
+it('opens the practice without an entry or automatic generation', async () => {
+  vi.mocked(api.post).mockResolvedValue({ ok: true });
+  const done = vi.fn();
+  render(<MemoryRouter><Onboarding user={{ uid: 'reader' } as User} onDone={done} /></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: /open my practice/i }));
+  await waitFor(() => expect(done).toHaveBeenCalledOnce());
+  expect(saveEntry).not.toHaveBeenCalled();
+  expect(api.post).toHaveBeenCalledWith('/api/profile/onboard', expect.objectContaining({ weeklyLetters: false, welcomeLetters: false }));
+});
+
+it('offers reading first and retains an optional writing path', () => {
   render(<MemoryRouter><Onboarding user={{ uid: 'first-user' } as User} onDone={() => undefined} /></MemoryRouter>);
-  expect(screen.getByText(/Step 1 of 2/)).toBeTruthy();
+  expect(screen.getByRole('button', { name: /open my practice/i })).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: /begin/i }));
   expect(screen.getByText(/Step 2 of 2/)).toBeTruthy();
   expect(screen.getByText(/What happens next/)).toBeTruthy();
@@ -24,6 +34,7 @@ it('waits for the first entry to sync and explicitly opts out of automatic lette
   vi.mocked(api.post).mockResolvedValue({ ok: true });
   const onDone = vi.fn();
   render(<MemoryRouter><Onboarding user={{ uid: 'first-user' } as User} onDone={onDone} /></MemoryRouter>);
+  fireEvent.click(screen.getByText('Optional Notebook reflection preferences'));
   expect(screen.getByRole('button', { name: 'Gentle' }).getAttribute('aria-pressed')).toBe('true');
   fireEvent.click(screen.getByRole('button', { name: /begin/i }));
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Today was ordinary.' } });

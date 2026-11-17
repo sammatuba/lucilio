@@ -46,9 +46,9 @@ export default function Landing() {
         <div className="explainer landing-explainer">
           <p>{PRACTICE_INTRO}</p>
           <ol className="landing-steps">
-            <li><strong>Write and save</strong> a moment in your own words — privately.</li>
-            <li><strong>Invite a reflection</strong> when you want one; the AI reads only that entry.</li>
-            <li><strong>Optional: ask a correspondent</strong> for a weekly letter drawn from several entries.</li>
+            <li><strong>Read something worth thinking about</strong> — philosophy with sources and competing perspectives.</li>
+            <li><strong>Follow your own question</strong> through a broad map of ideas, without a prescribed destination.</li>
+            <li><strong>Write, question, and revise</strong> — personal reflections and arguments, at your own pace.</li>
           </ol>
         </div>
 

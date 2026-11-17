@@ -86,7 +86,7 @@ describe('onboarding guard on every route (M2-6)', () => {
     cleanup();
   });
 
-  it.each(['/', '/notebook', '/desk', '/correspondents', '/atlas', '/atlas/liternum', '/trust', '/letter/abc'])(
+  it.each(['/', '/notebook', '/desk', '/philosophy', '/read/trust', '/inquiry/test', '/correspondents', '/atlas', '/atlas/liternum', '/trust', '/letter/abc'])(
     '%s leads back to onboarding before the practice begins',
     async (path) => {
       deskPayload = baseDesk({ profile: { tz: 'UTC', postDay: 'sunday', onboarded: false, crisisNotice: false } });
@@ -109,14 +109,14 @@ describe('onboarding guard on every route (M2-6)', () => {
     expect(await screen.findByRole('heading', { name: 'Notebook' })).toBeTruthy();
   });
 
-  it('/desk redirects to /', async () => {
+  it('/desk redirects to the reading-first practice', async () => {
     deskPayload = baseDesk();
     render(
       <MemoryRouter initialEntries={['/desk']}>
         <App />
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('heading', { name: 'Notebook' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'A question worth staying with.' })).toBeTruthy();
   });
 
   it('/study redirects to /correspondents', async () => {
@@ -139,14 +139,14 @@ describe('onboarding guard on every route (M2-6)', () => {
     expect(await screen.findByText('The Director')).toBeTruthy();
   });
 
-  it('returning to /onboarding after onboarding leads back to the Notebook', async () => {
+  it('returning to /onboarding after onboarding leads back to the practice', async () => {
     deskPayload = baseDesk();
     render(
       <MemoryRouter initialEntries={['/onboarding']}>
         <App />
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('heading', { name: 'Notebook' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'A question worth staying with.' })).toBeTruthy();
   });
 });
 

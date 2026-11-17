@@ -1,0 +1,202 @@
+/* Reading and the philosophy library. Imported by the application shell. */
+.philosophy-page,
+.reading-page {
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.reading-page { max-width: 70ch; margin-inline: auto; }
+.philosophy-header, .reading-header { margin-block: 0 2rem; }
+.philosophy-header h1, .reading-header h1, .reading-page > h1 {
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  line-height: 1.2;
+  margin-block: 0.5rem 1rem;
+}
+.philosophy-page h2, .reading-page h2 { line-height: 1.3; margin-block: 0 1rem; }
+.philosophy-page h3, .reading-page h3 { line-height: 1.4; margin-block: 1.6rem 0.6rem; }
+.philosophy-eyebrow {
+  font: 0.75rem/1.6 var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+.philosophy-meta, .philosophy-locator, .philosophy-source-note, .philosophy-source-author,
+.philosophy-graph figcaption, .philosophy-relation-kind {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.philosophy-lede, .reading-standfirst { font-size: 1.15rem; line-height: 1.7; }
+.reading-question { font-style: italic; color: var(--accent); }
+.reading-navigation { margin-bottom: 1.5rem; font-size: 0.875rem; }
+.philosophy-page a, .reading-page a { text-decoration: underline; text-underline-offset: 0.18em; }
+.philosophy-page a:hover, .reading-page a:hover { text-decoration-thickness: 2px; }
+
+.philosophy-page :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
+.reading-page :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.philosophy-button, .reading-button {
+  min-height: 44px;
+  max-width: 100%;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0.65rem 1rem;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: var(--card);
+  color: var(--accent);
+  font-family: var(--sans);
+}
+.reading-button { background: var(--accent); color: var(--paper); }
+.philosophy-button:hover:not(:disabled) { background: var(--paper-deep); }
+.reading-button:hover:not(:disabled) { background: var(--ink); }
+.philosophy-button:disabled, .reading-button:disabled { opacity: 0.6; cursor: default; }
+
+.philosophy-state, .philosophy-context, .reading-error {
+  border-inline-start: 3px solid var(--accent);
+  padding: 0.75rem 1rem;
+  margin-block: 1.5rem;
+  background: var(--paper-deep);
+}
+.philosophy-state p:first-child, .reading-error p:first-child { margin-top: 0; }
+.reading-error { border-color: var(--seal); }
+.philosophy-coverage, .reading-counterpoint {
+  border-block: 1px solid var(--rule);
+  padding: 1rem 0;
+  margin-block: 1.5rem 2rem;
+}
+.philosophy-coverage summary, .reading-counterpoint summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding-block: 0.3rem;
+  min-height: 44px;
+}
+.philosophy-coverage p { font-size: 0.95rem; }
+.reading-counterpoint { padding-inline: 1rem; background: var(--paper-deep); }
+
+.philosophy-browser { margin-block: 2rem; }
+.philosophy-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.philosophy-filters > div { flex: 1 1 14rem; min-width: 0; }
+.philosophy-filters label, .reading-begin label {
+  display: block;
+  font: 600 0.9rem/1.5 var(--sans);
+  margin-bottom: 0.5rem;
+}
+.philosophy-filters input, .philosophy-filters select, .reading-begin textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--ink-faint);
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink);
+  padding: 0.65rem;
+  min-height: 44px;
+  font: 1rem/1.5 var(--sans);
+}
+.philosophy-filters input::placeholder { color: var(--ink-soft); opacity: 1; }
+.reading-begin textarea { resize: vertical; font-family: var(--serif); font-size: 1.05rem; }
+.reading-begin textarea:disabled { color: var(--ink-soft); }
+.philosophy-index {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.75rem;
+}
+.philosophy-index li { min-width: 0; }
+.philosophy-index a {
+  display: block;
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--card);
+}
+.philosophy-index a:hover { border-color: var(--accent); text-decoration: none; }
+.philosophy-index a[aria-current="true"] { border-color: var(--accent); background: var(--paper-deep); }
+.philosophy-index a:hover .philosophy-node-title { text-decoration: underline; }
+.philosophy-index .philosophy-meta { display: block; font: 0.75rem/1.5 var(--sans); }
+.philosophy-node-title { display: block; font-weight: 600; font-size: 1.1rem; margin-block: 0.35rem; }
+.philosophy-node-summary { display: block; color: var(--ink-soft); font-size: 0.9rem; }
+.philosophy-detail { border-top: 2px solid var(--rule); padding-top: 2rem; }
+.philosophy-detail > h2 { scroll-margin-top: 1rem; }
+.philosophy-detail > ul, .reading-page section > ul { padding-inline-start: 1.5rem; }
+.philosophy-detail > ul > li, .reading-map-links li { margin-bottom: 0.6rem; }
+
+.philosophy-prose { line-height: 1.85; }
+.philosophy-prose > :first-child { margin-top: 0; }
+.philosophy-prose > :last-child { margin-bottom: 0; }
+.philosophy-prose blockquote { margin-inline: 0; padding-inline-start: 1rem; border-inline-start: 2px solid var(--rule); }
+.philosophy-prose pre { max-width: 100%; overflow-x: auto; font-size: 0.9rem; }
+.philosophy-prose ul, .philosophy-prose ol { padding-inline-start: 1.5rem; }
+.reading-essay { margin-block: 2rem; font-size: 1.08rem; }
+.reading-primary, .reading-invitations, .reading-rhythm, .reading-begin, .reading-map-links, .reading-sources {
+  border-top: 1px solid var(--rule);
+  padding-top: 2rem;
+  margin-top: 2.5rem;
+}
+.reading-rhythm ol { padding-inline-start: 1.5rem; }
+.reading-rhythm li { margin-block: 0.7rem; }
+.reading-begin form { margin-top: 1.5rem; }
+.reading-sources { padding-bottom: 1rem; }
+.philosophy-sources { list-style: none; padding: 0 !important; }
+.philosophy-sources > li { border-top: 1px solid var(--rule); padding-block: 0.9rem; }
+.philosophy-source-kind {
+  display: block;
+  font: 0.7rem/1.5 var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+.philosophy-locator, .philosophy-source-note { margin-block: 0.45rem 0; white-space: pre-line; }
+.philosophy-sources-compact { margin-bottom: 0; }
+.philosophy-sources-compact > li { font-size: 0.875rem; }
+.philosophy-connections { border-top: 1px solid var(--rule); margin-top: 2rem; }
+.philosophy-graph { margin: 1.5rem 0; padding: 1rem; background: var(--paper-deep); }
+.philosophy-graph svg { display: block; width: 100%; max-width: 360px; height: auto; margin-inline: auto; }
+.philosophy-graph-line { stroke: var(--ink-faint); stroke-width: 1.5; }
+.philosophy-graph-neighbor { fill: var(--card); stroke: var(--accent); stroke-width: 1.5; }
+.philosophy-graph-number { fill: var(--ink); font: 15px var(--sans); }
+.philosophy-graph-center { fill: var(--accent); }
+.philosophy-graph-center-text { fill: var(--paper); font: 13px var(--sans); }
+.philosophy-graph figcaption { text-align: center; margin-top: 0.5rem; }
+.philosophy-graph-pages { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: center; margin-top: 1rem; }
+.philosophy-relations { padding-inline-start: 1.5rem; }
+.philosophy-relations > li { padding-inline-start: 0.3rem; padding-block: 1rem; border-top: 1px solid var(--rule); }
+.philosophy-relations > li > a { font-size: 1.1rem; font-weight: 600; }
+.philosophy-relation-kind { margin-bottom: 0.5rem; }
+.philosophy-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 374px) {
+  .philosophy-index a { padding: 0.75rem; }
+  .philosophy-filters { gap: 0.75rem; }
+  .philosophy-graph { padding: 0.5rem; }
+  .philosophy-context, .philosophy-state, .reading-error { padding-inline: 0.75rem; }
+  .reading-counterpoint { padding-inline: 0.5rem; }
+  .philosophy-graph-pages > *, .reading-button { width: 100%; }
+  .philosophy-graph-pages > span { text-align: center; }
+}

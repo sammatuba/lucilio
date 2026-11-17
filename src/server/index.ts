@@ -15,6 +15,7 @@ import { internalRouter } from './routes/internal.js';
 import { devRouter } from './routes/dev.js';
 import { reflectionSettingsRouter, reflectionsRouter } from './routes/reflections.js';
 import { atlasRouter } from './routes/atlas.js';
+import { inquiriesRouter } from './routes/inquiries.js';
 
 loadEnvLocal();
 
@@ -88,6 +89,7 @@ export function buildApp(): express.Express {
   app.use('/api', reflectionSettingsRouter(deps));
   app.use('/api', reflectionsRouter(composeDeps));
   app.use('/api', atlasRouter(deps));
+  app.use('/api', inquiriesRouter(deps));
 
   const dev = devRouter();
   if (dev) app.use(dev);

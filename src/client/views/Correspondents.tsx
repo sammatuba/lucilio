@@ -58,7 +58,7 @@ export default function Correspondents({ desk, refresh }: { desk: DeskPayload | 
         letter drawn from several.
       </p>
       <p className="composer-hint" style={{ marginBottom: 26 }}>
-        Ask a correspondent for a letter here or from your <Link to="/">Notebook</Link> — once per
+        Ask a correspondent for a letter here or from your <Link to="/notebook">Notebook</Link> — once per
         correspondent per day. Read each volume below, or end a correspondence when it has run its
         course.
       </p>

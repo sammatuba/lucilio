@@ -7,6 +7,8 @@
     "auth": { "port": 19099 },
     "firestore": { "port": 18081 },
     "ui": { "enabled": false },
+    "hub": { "port": 14400 },
+    "logging": { "port": 14500 },
     "singleProjectMode": true
   }
 }

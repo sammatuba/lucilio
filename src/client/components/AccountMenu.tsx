@@ -8,6 +8,7 @@ import { GearIcon, LetterIcon, ShieldIcon } from './icons';
 // export, and sign-out — keeps the bar calm while still one click away.
 export default function AccountMenu({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -49,6 +50,7 @@ export default function AccountMenu({ user }: { user: User }) {
       >
         {user.displayName ?? user.email ?? 'Your account'} <span aria-hidden="true">▾</span>
       </button>
+      {error && <p role="alert">{error}</p>}
       {open && (
         <div className="account-menu-panel" role="menu" ref={menuRef}>
           <Link to="/settings" role="menuitem" onClick={() => setOpen(false)}>
@@ -57,6 +59,7 @@ export default function AccountMenu({ user }: { user: User }) {
           <Link to="/trust" role="menuitem" onClick={() => setOpen(false)}>
             <ShieldIcon size={16} />Trust Center
           </Link>
+          <Link to="/atlas" role="menuitem" onClick={() => setOpen(false)}>Atlas · places, works, and lives</Link>
           <Link to="/about" role="menuitem" onClick={() => setOpen(false)}>
             <LetterIcon size={16} /> About Lucilio
           </Link>
@@ -65,7 +68,8 @@ export default function AccountMenu({ user }: { user: User }) {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              downloadExport();
+              setError('');
+              downloadExport().catch(() => setError('Export could not be completed. Your data is unchanged; retry from Settings.'));
             }}
           >
             <LetterIcon size={16} />Export my data
@@ -75,7 +79,8 @@ export default function AccountMenu({ user }: { user: User }) {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              signOut();
+              setError('');
+              signOut().catch(() => setError('Sign-out could not finish. Check your device storage and try again.'));
             }}
           >
             Sign out

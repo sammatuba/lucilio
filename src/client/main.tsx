@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles/tokens.css';
 import './styles/app.css';
+import './styles/practice.css';
+import './styles/philosophy.css';
 
 // Firebase's sign-in result relay only works when the app is served from its
 // auth domain — browser storage partitioning breaks the cross-origin handoff

@@ -58,9 +58,9 @@ describe('Landing (production redirect sign-in)', () => {
 
   it('explains the practice before offering sign-in', () => {
     render(<MemoryRouter><Landing /></MemoryRouter>);
-    expect(screen.getByText(/Write and save/)).toBeTruthy();
-    expect(screen.getByText(/reads only that entry/)).toBeTruthy();
-    expect(screen.getByText(/Optional: ask a correspondent/)).toBeTruthy();
+    expect(screen.getByText(/Read something worth thinking about/)).toBeTruthy();
+    expect(screen.getByText(/Follow your own question/)).toBeTruthy();
+    expect(screen.getByText(/Write, question, and revise/)).toBeTruthy();
   });
 
   it('hands the click to the redirect sign-in', () => {
