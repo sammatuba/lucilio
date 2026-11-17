@@ -65,7 +65,7 @@ Parallel work begins only after contracts exist; each workstream has non-overlap
 
 ## Verification and handoff
 
-The complete first-edition experience is implemented, locally verified, and independently accepted. Production release is authorized and being prepared.
+The complete first-edition experience is implemented, locally verified, and independently accepted. Implementation commit `862913aab9506ee6c25e0c796f11e935cc6b2bee` passed the post-commit build, 106 unit, 154 client, 100 rules, 73 integration, and mock evaluation gates. Production release is authorized and being prepared. Two post-commit parallel client runs hit asynchronous assertion deadlines under heavy host contention (four failures, then one); the entire client suite passed with `npm run test:client -- --maxWorkers=1`, without changing code, assertions, timeouts, or configuration. Rules and correspondence evaluation artifacts identify source `862913a`; reflection results record their executed timestamp but have no source-SHA field.
 
 - First edition: six original essay bodies of 832, 855, 855, 858, 847, and 895 words; sixteen entry points; twenty-six explained editorial connections; seventeen sources. Preparation checked HTTP 200, headings, authors, locators, and selected passages, not full scholarly or primary-edition accuracy.
 - `npm test`: 106/106 passed, including 43 new content/contract cases.

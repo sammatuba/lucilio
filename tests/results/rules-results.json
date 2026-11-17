@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-10T09:40:45.944Z",
-  "gitSha": "70e0140",
+  "generatedAt": "2026-11-17T19:38:01.785Z",
+  "gitSha": "862913a",
   "framework": "@firebase/rules-unit-testing against the Firestore emulator",
-  "total": 64,
-  "passed": 64,
+  "total": 100,
+  "passed": 100,
   "failed": 0,
   "categories": [
     {
@@ -306,6 +306,164 @@
         },
         {
           "name": "unauthenticated cannot write",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "inquiries (API-only: all direct client access denied)",
+      "passed": 18,
+      "total": 18,
+      "tests": [
+        {
+          "name": "owner cannot read",
+          "pass": true
+        },
+        {
+          "name": "owner cannot list",
+          "pass": true
+        },
+        {
+          "name": "owner cannot create",
+          "pass": true
+        },
+        {
+          "name": "owner cannot replace",
+          "pass": true
+        },
+        {
+          "name": "owner cannot update",
+          "pass": true
+        },
+        {
+          "name": "owner cannot delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot list",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot create",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot replace",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot update",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot delete",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot list",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot create",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot replace",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot update",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot delete",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "category": "inquiryWritings (API-only: all direct client access denied)",
+      "passed": 18,
+      "total": 18,
+      "tests": [
+        {
+          "name": "owner cannot read",
+          "pass": true
+        },
+        {
+          "name": "owner cannot list",
+          "pass": true
+        },
+        {
+          "name": "owner cannot create",
+          "pass": true
+        },
+        {
+          "name": "owner cannot replace",
+          "pass": true
+        },
+        {
+          "name": "owner cannot update",
+          "pass": true
+        },
+        {
+          "name": "owner cannot delete",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot read",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot list",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot create",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot replace",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot update",
+          "pass": true
+        },
+        {
+          "name": "stranger cannot delete",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot read",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot list",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot create",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot replace",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot update",
+          "pass": true
+        },
+        {
+          "name": "unauthenticated cannot delete",
           "pass": true
         }
       ]
