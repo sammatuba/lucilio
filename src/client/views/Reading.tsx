@@ -2,11 +2,14 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { inquiryCreateSchema, inquiryDocSchema } from '../../shared/inquiry';
 import type { PhilosophyPack, PhilosophyReading } from '../../shared/philosophy';
+import type { User } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { readReadingDraft, removeReadingDraft, writeReadingDraft, withReadingDraftLock, type ReadingDraft } from '../lib/readingDraft';
 import { api } from '../lib/api';
 import { inquiryRequest } from '../lib/inquiryDraft';
 import PhilosophySources, { PhilosophyMarkdown, PhilosophyPackStatus, usePhilosophyPack } from '../components/PhilosophySources';
 
-export default function Reading() {
+export default function Reading({ user }: { user: User }) {
   const { id } = useParams<{ id: string }>();
   const { pack, state, retry } = usePhilosophyPack();
   const reading = pack?.readings.find((item) => item.id === id);
@@ -35,18 +38,24 @@ export default function Reading() {
     );
   }
   // Reset question and operation IDs when React reuses this route.
-  return <ReadingArticle key={reading.id} reading={reading} pack={pack} />;
+  return <ReadingArticle key={JSON.stringify([user.uid, reading.id])} user={user} reading={reading} pack={pack} />;
 }
 
-function ReadingArticle({ reading, pack }: { reading: PhilosophyReading; pack: PhilosophyPack }) {
+function ReadingArticle({ user, reading, pack }: { user: User; reading: PhilosophyReading; pack: PhilosophyPack }) {
   const navigate = useNavigate();
-  const [question, setQuestion] = useState(reading.question);
+  const [initial] = useState(() => {
+    try { return { draft: readReadingDraft(user.uid, reading.id), unreadable: false }; }
+    catch { return { draft: null, unreadable: true }; }
+  });
+  const [draft, setDraft] = useState<ReadingDraft>(initial.draft ?? { question: reading.question, attempts: [] });
+  const { question } = draft;
+  const [unreadable, setUnreadable] = useState(initial.unreadable);
+  const [storageError, setStorageError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const editorAttempts = useRef(new Map(draft.attempts.map(attempt => [attempt.question, attempt])));
   const pending = useRef(false);
   const active = useRef(true);
-  // Restoring an earlier question must retry its original operation ID.
-  const candidates = useRef(new Map<string, string>());
   const primaryIds = reading.sourceIds.filter((id) => pack.sources.some((source) => source.id === id && source.kind === 'primary'));
   const validQuestion = question.trim().length > 0 && question.length <= 300;
 
@@ -55,25 +64,67 @@ function ReadingArticle({ reading, pack }: { reading: PhilosophyReading; pack: P
     return () => { active.current = false; };
   }, []);
 
+  async function editQuestion(value: string) {
+    setDraft(previous => ({ ...previous, question: value }));
+    if (unreadable) return;
+    try {
+      await withReadingDraftLock(user.uid, reading.id, () => {
+        if (auth.currentUser !== user) return;
+        const attempts = readReadingDraft(user.uid, reading.id)?.attempts ?? [];
+        if (value === reading.question && !attempts.length) removeReadingDraft(user.uid, reading.id);
+        else writeReadingDraft(user.uid, reading.id, { question: value, attempts });
+      });
+      setStorageError(false);
+    } catch { setStorageError(true); }
+  }
+
   async function beginInquiry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending.current || !validQuestion) return;
+    if (pending.current || !validQuestion || unreadable || auth.currentUser !== user) return;
     pending.current = true;
     setSaving(true);
     setError(null);
     try {
-      const snapshot = {
-        question: question.trim(), readingId: reading.id, parentId: null, nodeIds: reading.nodeIds,
-      };
-      const key = JSON.stringify(snapshot);
-      let candidateId = candidates.current.get(key);
-      if (!candidateId) {
-        candidateId = crypto.randomUUID();
-        candidates.current.set(key, candidateId);
-      }
-      const payload = inquiryCreateSchema.parse({ id: candidateId, ...snapshot });
+      let payload: ReadingDraft['attempts'][number] | null;
+      try {
+        payload = await withReadingDraftLock(user.uid, reading.id, () => {
+          if (auth.currentUser !== user) return null;
+          const attempts = readReadingDraft(user.uid, reading.id)?.attempts ?? [];
+          const prior = attempts.find(attempt => attempt.question === question.trim() && attempt.readingId === reading.id);
+          if (prior) return prior;
+          const candidate = editorAttempts.current.get(question.trim()) ?? inquiryCreateSchema.parse({
+            id: crypto.randomUUID(), question, readingId: reading.id, parentId: null, nodeIds: reading.nodeIds,
+          });
+          writeReadingDraft(user.uid, reading.id, { question, attempts: [...attempts, candidate] });
+          return candidate;
+        });
+        setStorageError(false);
+      } catch { setStorageError(true); return; }
+      if (!payload || auth.currentUser !== user) return;
+      editorAttempts.current.set(payload.question, payload);
       const inquiry = inquiryDocSchema.parse(await inquiryRequest(api.post<unknown>('/api/inquiries', payload)));
-      if (active.current) navigate(`/inquiry/${encodeURIComponent(inquiry.id)}`);
+      if (inquiry.id !== payload.id) throw new Error('Unconfirmed inquiry');
+      if (auth.currentUser !== user) return;
+      // A later visit may have edited the draft while this request was pending.
+      let cleanupFailed = false;
+      try {
+        await withReadingDraftLock(user.uid, reading.id, () => {
+          if (auth.currentUser !== user) return;
+          const stored = readReadingDraft(user.uid, reading.id);
+          if (!stored?.attempts.some(attempt => attempt.id === inquiry.id)) return;
+          const attempts = stored.attempts.filter(attempt => attempt.id !== inquiry.id);
+          if (stored.question !== question) {
+            writeReadingDraft(user.uid, reading.id, { ...stored, attempts });
+          } else if (attempts.length) {
+            writeReadingDraft(user.uid, reading.id, { question: attempts[attempts.length - 1]!.question, attempts });
+          } else {
+            removeReadingDraft(user.uid, reading.id);
+          }
+        });
+      } catch { cleanupFailed = true; }
+      if (active.current && auth.currentUser === user) {
+        navigate(`/inquiry/${encodeURIComponent(inquiry.id)}`, { state: { readingDraftCleanupFailed: cleanupFailed } });
+      }
     } catch {
       if (active.current) setError('We could not confirm that your inquiry was saved. Your question is still here. Retry the same question to safely repeat the request.');
     } finally {
@@ -85,11 +136,12 @@ function ReadingArticle({ reading, pack }: { reading: PhilosophyReading; pack: P
   return (
     <article className="reading-page" aria-labelledby="reading-title">
       <nav className="reading-navigation" aria-label="Reading navigation"><Link to="/philosophy">Explore the philosophy map</Link></nav>
-      <header className="reading-header">
+      <header className="reading-header" data-reading={reading.id}>
         <p className="philosophy-eyebrow">An original editorial essay · {reading.minutes} minutes of reading</p>
         <h1 id="reading-title">{reading.title}</h1>
         <p className="reading-standfirst">{reading.standfirst}</p>
         <p className="reading-question">{reading.question}</p>
+        <a href="#reading-begin-title">Jump to your question</a>
       </header>
       <details className="philosophy-coverage">
         <summary>What you are reading: sources &amp; coverage</summary>
@@ -142,21 +194,31 @@ function ReadingArticle({ reading, pack }: { reading: PhilosophyReading; pack: P
       </section>
 
       <section className="reading-begin" aria-labelledby="reading-begin-title">
-        <h2 id="reading-begin-title">Make the question your own</h2>
+        <h2 id="reading-begin-title" tabIndex={-1}>Make the question your own</h2>
         <p>An inquiry is a place to keep a question and your writing. Begin with this reading or take it somewhere unexpected.
           Beginning saves only the question and its reading/map links; it does not request an AI response.</p>
         <form onSubmit={beginInquiry} aria-busy={saving}>
           <label htmlFor="reading-initial-question">Your initial question</label>
           <textarea id="reading-initial-question" value={question} maxLength={300} rows={3}
             required disabled={saving} aria-describedby="reading-question-help reading-question-count"
-            onChange={(event) => setQuestion(event.target.value)} />
-          <p id="reading-question-help" className="philosophy-meta">Up to 300 characters. You can change direction later. This unsaved question stays here only while this reading is open.</p>
+            onChange={(event) => editQuestion(event.target.value)} />
+          <p id="reading-question-help" className="philosophy-meta">Up to 300 characters. You can change direction later. Your draft is kept on this device for this account until you begin the inquiry or sign out.</p>
           <p id="reading-question-count" className="philosophy-meta">{question.length} / 300 characters</p>
+          {storageError && <p role="alert">This browser could not keep your latest question and retry details. Copy your words before leaving, or try again with browser storage available.</p>}
+          {unreadable && <div role="alert">Your stored question could not be read.
+            <button type="button" onClick={() => {
+              try {
+                writeReadingDraft(user.uid, reading.id, draft);
+                setUnreadable(false);
+              } catch { setStorageError(true); }
+            }}>Replace the unreadable draft with this question</button>
+          </div>}
           {error && <div className="reading-error" role="alert">
             <p>{error}</p>
             <p>If you change the question before retrying, that is a separate inquiry; the earlier attempt may already have been saved.</p>
           </div>}
-          <button className="reading-button" type="submit" disabled={saving || !validQuestion}>
+          {!error && draft.attempts.length > 0 && !saving && <p role="status">An earlier save is unconfirmed. Retry the same question to resume it. A different question starts a separate inquiry.</p>}
+          <button className="reading-button" type="submit" disabled={saving || unreadable || !validQuestion}>
             {saving ? 'Beginning your inquiry…' : error ? 'Try again to begin an inquiry' : 'Begin an inquiry'}
           </button>
           {saving && <p className="philosophy-meta" role="status">Saving your question. No AI is being called.</p>}

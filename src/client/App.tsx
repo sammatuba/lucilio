@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { onAuthStateChanged, type User } from './lib/auth';
 import { auth } from './lib/firebase';
+import { clearReceipt, readReceipt } from './lib/onboardingReceipt';
 import { api } from './lib/api';
 import type { DeskPayload } from '../shared/schemas';
 import { CRISIS_RESOURCES } from '../shared/constants';
@@ -45,10 +46,25 @@ function Shell({ user }: { user: User }) {
   const [desk, setDesk] = useState<DeskPayload | null>(null);
   const [deskError, setDeskError] = useState<string | null>(null);
   const location = useLocation();
+  const [onboardDestination, setOnboardDestination] = useState('/');
+  const [recoveringEntry, setRecoveringEntry] = useState(false);
 
   async function loadDesk() {
     try {
-      setDesk(await api.get<DeskPayload>('/api/desk'));
+      const loaded = await api.get<DeskPayload>('/api/desk');
+      if (loaded.profile.onboarded && auth.currentUser === user) {
+        // A reload can reach the guard after the server committed profile setup
+        // but before Onboarding received its response and cleared the receipt.
+        try {
+          const receipt = readReceipt(user.uid);
+          setRecoveringEntry(!!receipt && receipt.status !== 'saved');
+          if (receipt?.status === 'saved') {
+            setOnboardDestination('/notebook');
+            clearReceipt(user.uid);
+          }
+        } catch { /* Site storage may be blocked while the account is usable. */ }
+      }
+      setDesk(loaded);
       setDeskError(null);
     } catch (e) {
       setDeskError(e instanceof Error ? e.message : 'could not reach the desk');
@@ -112,11 +128,11 @@ function Shell({ user }: { user: User }) {
       <Routes>
         <Route path="/" element={guard(<Practice />)} />
         <Route path="/philosophy" element={guard(<Philosophy />)} />
-        <Route path="/read/:id" element={guard(<Reading />)} />
+        <Route path="/read/:id" element={guard(<Reading user={user} />)} />
         <Route path="/inquiry/:id" element={guard(<Inquiry user={user} />)} />
         <Route
           path="/onboarding"
-          element={desk?.profile.onboarded ? <Navigate to="/" replace /> : <Onboarding user={user} onDone={onOnboarded} />}
+          element={desk?.profile.onboarded && !recoveringEntry ? <Navigate to={onboardDestination} replace /> : <Onboarding user={user} onDone={onOnboarded} />}
         />
         <Route path="/letter/:id" element={guard(<LetterView />)} />
         <Route path="/notebook" element={guard(<Notebook user={user} desk={desk} refresh={loadDesk} />)} />

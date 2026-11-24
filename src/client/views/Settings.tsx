@@ -150,7 +150,7 @@ export default function Settings({ user }: { user: User }) {
 
       <div className="trust-section">
         <h3>Your data</h3>
-        <p>Export includes saved inquiries, writing and revisions, Notebook entries, and unsaved inquiry drafts on this device. Device drafts are cleared when you sign out; save or export them first.</p>
+        <p>Export includes saved inquiries, writing and revisions, Notebook entries, and device drafts for inquiries and reading questions, including questions from earlier save attempts. The export also includes any recovery details for your first Notebook entry. Device drafts are cleared when you sign out; save or export them first.</p>
         <p style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <button className="btn-quiet" onClick={() => { setExportError(''); void downloadExport().catch(() => setExportError('The export could not be completed. Your writing has not been changed. Try again before signing out.')); }}>Export my data</button>
           <button className="btn-danger" disabled={deleteBusy} onClick={() => setConfirmDelete(true)}>Delete account</button>

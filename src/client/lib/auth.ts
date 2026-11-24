@@ -12,6 +12,9 @@ import { auth, googleProvider, useEmulators } from './firebase';
 import { clearInquiryDrafts, exportInquiryDrafts } from './inquiryDraft';
 import { setNotebookDraft } from './notebookDraft';
 
+import { clearReadingDrafts, exportReadingDrafts } from './readingDraft';
+import { clearReceipt, readReceipt } from './onboardingReceipt';
+
 export { onAuthStateChanged, type User };
 
 // Production signs in through a full-page redirect, not a popup: the popup
@@ -59,16 +62,26 @@ export async function signOut({ discardDrafts = false, user = auth.currentUser }
     let allowUnclearedDrafts = false;
     if (!discardDrafts) {
       let hasDrafts = false;
+      let hasReceipt = false;
       try {
-        hasDrafts = exportInquiryDrafts(uid).length > 0;
+        hasReceipt = readReceipt(uid) !== null;
+        hasDrafts = exportInquiryDrafts(uid).length > 0 || exportReadingDrafts(uid).length > 0;
       } catch {
-        if (!window.confirm(`Local inquiry drafts could not be read. Cancel to stay signed in and recover your writing before retrying. Signing out will try to discard unsaved drafts. ${localDraftWarning} Sign out anyway?`)) return;
+        if (!window.confirm(`Local writing drafts could not be read. Cancel to stay signed in and recover your writing before retrying. Signing out will try to discard unsaved drafts. ${localDraftWarning} Sign out anyway?`)) return;
         allowUnclearedDrafts = true;
       }
-      if (hasDrafts && !window.confirm('Signing out clears unsaved inquiry drafts on this device. Save or export them first if you want to keep them. Sign out and clear drafts?')) return;
+      if (hasDrafts || hasReceipt) {
+        const receiptNotice = hasReceipt ? ' Signing out also clears your first-entry receipt and any pending entry text. After signing back in, check your Notebook before saving another first entry.' : '';
+        if (!window.confirm(`Signing out clears local writing drafts on this device.${receiptNotice} Save or export them first if you want to keep them. Sign out and clear drafts?`)) return;
+      }
     }
     try {
-      clearInquiryDrafts(uid);
+      // Attempt each cleanup even if another store is inaccessible.
+      let failed = false;
+      for (const clear of [clearReceipt, clearReadingDrafts, clearInquiryDrafts]) {
+        try { clear(uid); } catch { failed = true; }
+      }
+      if (failed) throw new Error('Local cleanup incomplete');
     } catch {
       if (discardDrafts) {
         const signOutNotice = auth.currentUser === user ? 'You will still be signed out.' : 'Your current sign-in state will not be changed.';

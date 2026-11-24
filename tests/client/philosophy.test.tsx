@@ -5,8 +5,11 @@ import { Link, MemoryRouter, Route, Routes, useLocation, useParams } from 'react
 import Philosophy from '../../src/client/views/Philosophy';
 import Reading from '../../src/client/views/Reading';
 import { philosophyPackSchema, type PhilosophyPack } from '../../src/shared/philosophy';
+import type { User } from 'firebase/auth';
 import type { Inquiry } from '../../src/shared/inquiry';
 
+const session = vi.hoisted(() => ({ currentUser: { uid: 'reader' } as User }));
+vi.mock('../../src/client/lib/firebase', () => ({ auth: session }));
 vi.mock('../../src/client/lib/api', () => ({ api: { get: vi.fn(), post: vi.fn() } }));
 import { api } from '../../src/client/lib/api';
 
@@ -50,7 +53,7 @@ function open(path: string, navigation = false) {
       {navigation && <nav><Link to="/read/other-reading">Another reading</Link><Link to="/philosophy">Leave reading</Link></nav>}
       <Routes>
         <Route path="/philosophy" element={<Philosophy />} />
-        <Route path="/read/:id" element={<Reading />} />
+        <Route path="/read/:id" element={<Reading user={session.currentUser} />} />
         <Route path="/inquiry/:id" element={<InquiryDestination />} />
       </Routes>
       <Location />
@@ -63,6 +66,9 @@ function saved(payload: unknown): Inquiry {
 function entryList() { return screen.getByRole('list', { name: 'Map entries' }); }
 
 beforeEach(() => {
+  Object.defineProperty(navigator, 'locks', { configurable: true, value: { request: (_name: string, run: () => unknown) => Promise.resolve(run()) } });
+  localStorage.clear();
+  session.currentUser = { uid: 'reader' } as User;
   vi.mocked(api.get).mockReset();
   vi.mocked(api.post).mockReset();
   vi.mocked(api.get).mockResolvedValue(fixture());
@@ -209,7 +215,7 @@ describe('reading-first practice', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Begin an inquiry' }));
     await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
     expect(screen.getByRole('alert').textContent).toContain('could not confirm');
-    fireEvent.click(screen.getByRole('button', { name: 'Try again to begin an inquiry' }));
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Try again to begin an inquiry' })); });
     expect(vi.mocked(api.post).mock.calls[0]![1]).toEqual(vi.mocked(api.post).mock.calls[1]![1]);
   });
   it('renders the entire editorial essay, optional counterpoint, invitations, rhythm, and source locators', async () => {
@@ -242,6 +248,15 @@ describe('reading-first practice', () => {
     fireEvent.change(question, { target: { value: 'An entirely unrelated personal question?' } });
     expect(api.get).toHaveBeenCalledTimes(1);
     expect(api.get).toHaveBeenCalledWith('/api/philosophy');
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('restores an unsubmitted question on return without creating an inquiry', async () => {
+    const first = open('/read/test-reading');
+    fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Still thinking…' } });
+    first.unmount();
+    open('/read/test-reading');
+    expect((await screen.findByRole('textbox') as HTMLTextAreaElement).value).toBe('Still thinking…');
     expect(api.post).not.toHaveBeenCalled();
   });
 
@@ -302,6 +317,103 @@ describe('reading-first practice', () => {
     expect(calls[2]).toEqual(calls[0]);
   });
 
+  it('restores the edited question and retry payload after reload, scoped to user and reading', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('lost response'))
+      .mockImplementationOnce(async (_path, payload) => saved(payload));
+    const owner = session.currentUser;
+    let view = open('/read/test-reading');
+    const field = await screen.findByRole('textbox');
+    const jump = screen.getByRole('link', { name: 'Jump to your question' });
+    expect(document.querySelector(jump.getAttribute('href')!)?.textContent).toBe('Make the question your own');
+    fireEvent.change(field, { target: { value: '  Can I reconsider?  ' } });
+    fireEvent.submit(field.closest('form')!);
+    await screen.findByRole('alert');
+    view.unmount();
+
+    session.currentUser = { uid: 'another-reader' } as User;
+    view = open('/read/test-reading');
+    expect((await screen.findByRole('textbox') as HTMLTextAreaElement).value).toBe(fixture().readings[0]!.question);
+    view.unmount();
+    session.currentUser = owner;
+    view = open('/read/other-reading');
+    expect((await screen.findByRole('textbox') as HTMLTextAreaElement).value).toBe(fixture().readings[1]!.question);
+    view.unmount();
+
+    open('/read/test-reading');
+    const restored = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    expect(restored.value).toBe('  Can I reconsider?  ');
+    expect(api.post).toHaveBeenCalledTimes(1);
+    fireEvent.submit(restored.closest('form')!);
+    await screen.findByRole('heading', { name: /Inquiry destination:/ });
+    expect(vi.mocked(api.post).mock.calls[1]).toEqual(vi.mocked(api.post).mock.calls[0]);
+    expect(localStorage.length).toBe(0);
+  });
+
+  it('reopens the unresolved question after a different question succeeds', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('response lost'))
+      .mockImplementation(async (_path, payload) => saved(payload));
+    const view = open('/read/test-reading');
+    const field = await screen.findByRole('textbox');
+    fireEvent.change(field, { target: { value: 'First question?' } });
+    fireEvent.submit(field.closest('form')!);
+    await screen.findByRole('alert');
+    fireEvent.change(field, { target: { value: 'Second question?' } });
+    fireEvent.submit(field.closest('form')!);
+    await screen.findByRole('heading', { name: /Inquiry destination:/ });
+    view.unmount();
+    open('/read/test-reading');
+    const restored = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    expect(restored.value).toBe('First question?');
+    fireEvent.submit(restored.closest('form')!);
+    await screen.findByRole('heading', { name: /Inquiry destination:/ });
+    expect(vi.mocked(api.post).mock.calls[2]).toEqual(vi.mocked(api.post).mock.calls[0]);
+  });
+
+  it('opens a confirmed inquiry when its device draft cannot be cleared', async () => {
+    vi.mocked(api.post).mockImplementation(async (_path, payload) => saved(payload));
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('storage blocked'); });
+    open('/read/test-reading');
+    const field = await screen.findByRole('textbox');
+    fireEvent.submit(field.closest('form')!);
+    await screen.findByRole('heading', { name: /Inquiry destination:/ });
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+
+  it('reuses an ambiguous attempt from another already-open reading tab', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('lost response'))
+      .mockImplementationOnce(async (_path, payload) => saved(payload));
+    const first = open('/read/test-reading');
+    const second = open('/read/test-reading');
+    for (const tab of [first, second]) {
+      const field = await within(tab.container).findByRole('textbox');
+      fireEvent.change(field, { target: { value: 'Can I reconsider?' } });
+    }
+    fireEvent.submit(within(first.container).getByRole('textbox').closest('form')!);
+    await within(first.container).findByRole('alert');
+    fireEvent.submit(within(second.container).getByRole('textbox').closest('form')!);
+    await within(second.container).findByRole('heading', { name: /Inquiry destination:/ });
+    expect(vi.mocked(api.post).mock.calls[1]).toEqual(vi.mocked(api.post).mock.calls[0]);
+  });
+
+  it('retains the editor retry ID when another tab already confirmed the shared attempt', async () => {
+    let confirm!: (value: unknown) => void;
+    vi.mocked(api.post).mockImplementationOnce(() => new Promise(resolve => { confirm = resolve; }))
+      .mockRejectedValueOnce(new Error('lost response')).mockImplementationOnce(async (_path, body) => saved(body));
+    const first = open('/read/test-reading');
+    const second = open('/read/test-reading');
+    for (const tab of [first, second]) {
+      const field = await within(tab.container).findByRole('textbox');
+      fireEvent.submit(field.closest('form')!);
+      await waitFor(() => expect(api.post).toHaveBeenCalledTimes(tab === first ? 1 : 2));
+    }
+    await within(second.container).findByRole('alert');
+    await act(async () => { confirm(saved(vi.mocked(api.post).mock.calls[0]![1])); });
+    await within(first.container).findByRole('heading', { name: /Inquiry destination:/ });
+    fireEvent.click(within(second.container).getByRole('button', { name: 'Try again to begin an inquiry' }));
+    await within(second.container).findByRole('heading', { name: /Inquiry destination:/ });
+    expect(vi.mocked(api.post).mock.calls[2]).toEqual(vi.mocked(api.post).mock.calls[0]);
+  });
+
   it('rejects whitespace and oversized initial questions without making a write', async () => {
     open('/read/test-reading');
     const question = await screen.findByRole('textbox');
@@ -321,7 +433,7 @@ describe('reading-first practice', () => {
     const question = await screen.findByRole('textbox');
     fireEvent.submit(question.closest('form')!);
     fireEvent.submit(question.closest('form')!);
-    expect(api.post).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
     expect((screen.getByRole('textbox') as HTMLTextAreaElement).disabled).toBe(true);
     expect(screen.getByRole('status').textContent).toMatch(/Saving your question/);
     fireEvent.click(screen.getByRole('link', { name: 'Another reading' }));

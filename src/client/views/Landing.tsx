@@ -44,7 +44,10 @@ export default function Landing() {
         <img src="/lockup.svg" alt="Lucilio: understand yourself in a changing world" className="landing-lockup" />
 
         <div className="explainer landing-explainer">
-          <p>{PRACTICE_INTRO}</p>
+          <div className="landing-intro">
+            <p>{PRACTICE_INTRO}</p>
+            <img src="/trust-rim.webp" width="560" height="280" alt="" className="landing-sketch" />
+          </div>
           <ol className="landing-steps">
             <li><strong>Read something worth thinking about</strong> — philosophy with sources and competing perspectives.</li>
             <li><strong>Follow your own question</strong> through a broad map of ideas, without a prescribed destination.</li>

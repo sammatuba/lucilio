@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { api, ApiError } from '../lib/api';
 import { renderMarkdown } from '../lib/markdown';
@@ -25,6 +25,7 @@ function InquiryPage({ id, user }: { id: string; user: User }) {
   const [branchError, setBranchError] = useState('');
   const branchAttempt = useRef<Pick<InquiryDetail['inquiry'], 'id' | 'question' | 'parentId' | 'readingId' | 'nodeIds'> | null>(null);
   const [params] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
     let live = true;
@@ -64,6 +65,7 @@ function InquiryPage({ id, user }: { id: string; user: User }) {
   const suggestedNode = pack.nodes.find((n) => n.id === params.get('node'));
   return <main className="inquiry-page">
     <nav className="inquiry-breadcrumbs" aria-label="Inquiry navigation"><Link to="/">Your practice</Link>{inquiry.parentId && <Link to={`/inquiry/${inquiry.parentId}`}>Return to the parent question</Link>}</nav>
+    {location.state?.readingDraftCleanupFailed && <p role="status">Your inquiry is saved. This browser could not clear the reading draft from this device.</p>}
     <p className="practice-eyebrow">An open inquiry · {inquiry.status}</p><h1 className="inquiry-title">{inquiry.question}</h1>
     <p className="practice-intro">Stay with this question, let it change, or follow something unexpected. There is no deadline and no required conclusion.</p>
     <div className="inquiry-actions">

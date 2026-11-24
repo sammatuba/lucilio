@@ -4,7 +4,19 @@
 .practice-intro { color: var(--ink-soft); font-size: 18px; line-height: 1.75; max-width: 690px; }
 .practice-page .composer-hint, .practice-page .page-sub, .inquiry-page .composer-hint, .inquiry-page .page-sub { color: var(--ink-soft); }
 .practice-page input:focus-visible, .inquiry-page input:focus-visible, .inquiry-page select:focus-visible, .inquiry-page textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.practice-feature { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 30px 32px 22px; margin: 34px 0 42px; }
+.practice-feature { display: flow-root; background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 30px 32px 22px; margin: 34px 0 42px; }
+.practice-sketch { display: none; }
+@media (min-width: 641px) {
+  .practice-sketch {
+    display: block;
+    float: right;
+    width: 24%;
+    max-width: 184px;
+    aspect-ratio: 2 / 1;
+    margin-left: 20px;
+    background: url('/trust-rim.webp') center / contain no-repeat;
+  }
+}
 .practice-feature-label { font-family: var(--sans); font-size: 12px; color: var(--ink-soft); }
 .practice-feature h2 { font-weight: 500; font-size: 30px; line-height: 1.3; margin: 14px 0; }
 .practice-feature p { max-width: 650px; line-height: 1.8; }

@@ -29,6 +29,19 @@
 }
 .philosophy-lede, .reading-standfirst { font-size: 1.15rem; line-height: 1.7; }
 .reading-question { font-style: italic; color: var(--accent); }
+@media (min-width: 641px) {
+  .reading-header[data-reading="attention"] .reading-question {
+    display: grid;
+    grid-template-columns: 1fr 26%;
+    align-items: center;
+    gap: 24px;
+  }
+  .reading-header[data-reading="attention"] .reading-question::after {
+    content: "";
+    aspect-ratio: 560 / 233;
+    background: url('/attention-phone.webp') center / contain no-repeat;
+  }
+}
 .reading-navigation { margin-bottom: 1.5rem; font-size: 0.875rem; }
 .philosophy-page a, .reading-page a { text-decoration: underline; text-underline-offset: 0.18em; }
 .philosophy-page a:hover, .reading-page a:hover { text-decoration-thickness: 2px; }

@@ -7,7 +7,17 @@ export default function About({ standalone = false }: { standalone?: boolean }) 
   const body = (
     <>
       <h2 className="page-title">About Lucilio</h2>
-      <p className="page-sub">A journal that reflects when you invite it.</p>
+      <p className="page-sub">A place to read philosophy, follow a question, and return to your own writing.</p>
+
+      <section className="about-section">
+        <h3>A place to begin</h3>
+        <p>
+          Practice opens with an essay and a question. Borrow that question or bring your own, explore a
+          competing view in the philosophy map, and keep your reflections and revisions together in an inquiry.
+          You can also write freely in the Notebook and invite a reflection when you want one.
+        </p>
+        {!standalone && <p><Link to="/">Open your practice</Link></p>}
+      </section>
 
       <section className="about-section">
         <h3>Where the name comes from</h3>
@@ -19,8 +29,8 @@ export default function About({ standalone = false }: { standalone?: boolean }) 
           conversation where the other person is waiting for you to finish your sentence.
         </p>
         <p>
-          That is the shape this app borrows. Not a chat window. A letter, written after reading, arriving
-          when it is ready.
+          Lucilio borrows that rhythm for its optional correspondence. A letter arrives after the
+          correspondent has had time to read.
         </p>
       </section>
 
@@ -87,6 +97,10 @@ export default function About({ standalone = false }: { standalone?: boolean }) 
       <section className="about-section">
         <h3>What you will find here</h3>
         <ul>
+          <li>
+            <strong>Practice and the philosophy map.</strong> Read a sourced essay, compare perspectives,
+            and revisit a question as your thinking changes.
+          </li>
           <li>
             <strong>The Notebook.</strong> Write and save with no AI involved. Invite a reflection on any
             entry when you want one, at the depth you choose.

@@ -21,12 +21,19 @@ export function writeInquiryDraft(uid: string, inquiryId: string, draft: Inquiry
 export function removeInquiryDraft(uid: string, inquiryId: string): void {
   localStorage.removeItem(key(uid, inquiryId));
 }
+export function draftKeys(ownPrefix: string): string[] {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const name = localStorage.key(i);
+    if (name?.startsWith(ownPrefix)) keys.push(name);
+  }
+  return keys;
+}
+
 export function exportInquiryDrafts(uid: string): Array<{ inquiryId: string; draft: InquiryDraft }> {
   const ownPrefix = `${prefix}${encodeURIComponent(uid)}:`;
   const drafts = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const name = localStorage.key(i);
-    if (!name?.startsWith(ownPrefix)) continue;
+  for (const name of draftKeys(ownPrefix)) {
     const draft = draftSchema.parse(JSON.parse(localStorage.getItem(name)!));
     if (draft.bodyMd.trim()) drafts.push({ inquiryId: decodeURIComponent(name.slice(ownPrefix.length)), draft });
   }

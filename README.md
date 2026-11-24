@@ -83,7 +83,7 @@ are an optional, compatible practice with three correspondents:
 
 **Primary navigation:** **Practice** (`/`) for reading invitations and saved inquiries; **Philosophy** (`/philosophy`) for the searchable source map; **Notebook** (`/notebook`) for journal entries, invited reflection, and the correspondence tray. Readings and inquiries have their own deep links. The account menu retains **Atlas**, **Settings**, **Trust Center**, and **About**; correspondence volumes and letters remain reachable from the Notebook. Atlas offers sourced plates and an opt-in “Write from this” bridge to the Notebook.
 
-New users can choose **Open my practice — read first** without writing an entry or generating welcome letters. **Begin with writing instead** preserves the optional Notebook route. Export includes saved inquiries, revisions, and the current account’s unsaved inquiry drafts on this device. Draft cleanup on sign-out or account deletion requires working browser storage; failures show recovery guidance rather than claiming erasure succeeded.
+New users can choose **Open my practice — read first** without writing an entry or generating welcome letters. **Begin with writing instead** preserves the optional Notebook route. Export includes saved inquiries, revisions, and the current account’s inquiry drafts and reading-question drafts on this device. Draft cleanup on sign-out or account deletion requires working browser storage; failures show recovery guidance rather than claiming erasure succeeded.
 
 Every correspondent is an **AI instrument for a reflective practice, not a person**. This is stated in their own words on the onboarding screen and in every persona, and it is enforced as a testable requirement, not a vibe (see the eval suite below).
 
@@ -319,7 +319,7 @@ All steps below assume the local dev stack (`npm run dev`, client at http://loca
 1. Start the stack (`npm run dev`) and open http://localhost:5173. The landing page offers Google sign-in; production uses a redirect, while the emulator offers dev sign-in.
 2. Enter a name in the dev sign-in field. New users can open Practice directly from reading-first onboarding without writing.
 3. Reload. Firebase restores the signed-in session.
-4. Choose **Sign out** from the account menu. If inquiry drafts exist, cancel to preserve them or confirm their discard; storage failures offer warned recovery. Successful sign-out returns to the landing page.
+4. Choose **Sign out** from the account menu. If local drafts or first-entry recovery details exist, cancel to preserve them or confirm their discard; storage failures offer warned recovery. Successful sign-out returns to the landing page.
 
 ### US-2 — Write notebook entries; writes verified before the composer clears; Retry on failure
 
@@ -375,7 +375,7 @@ All steps below assume the local dev stack (`npm run dev`, client at http://loca
 ### US-9 — Export everything; delete account with full cascade
 
 1. Go to **Settings** → **Your data**.
-2. Choose **Export my data**. The download includes saved inquiries and writing/revision links, Notebook and correspondence data, and the initiating account’s device-local inquiry drafts. Changing accounts during export aborts the download.
+2. Choose **Export my data**. The download includes saved inquiries and writing/revision links, Notebook and correspondence data, and the initiating account’s device-local inquiry drafts and reading questions, including earlier attempts to save a question. It also includes any first-entry recovery details for the account. Changing accounts during export aborts the download.
 3. Choose **Delete account**, read the disclosure, and type **delete** to confirm.
 4. Server deletion removes the user subtree and Auth user. Device cleanup targets the deleted account even if the current sign-in changed; storage failures warn about remaining local data without cancelling an already-completed deletion.
 

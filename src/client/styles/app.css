@@ -774,6 +774,15 @@
   padding-top: 0;
 }
 
+.landing-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(76px, 22%, 132px);
+  align-items: center;
+  gap: 14px;
+}
+.landing-intro p { margin: 0; }
+.landing-sketch { display: block; width: 100%; height: auto; }
+
 .landing-steps {
   margin: 16px 0 0;
   padding-left: 20px;

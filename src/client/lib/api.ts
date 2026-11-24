@@ -5,6 +5,9 @@ import { getToken as getAppCheckToken } from 'firebase/app-check';
 import { onAuthStateChanged } from 'firebase/auth';
 import { exportInquiryDrafts } from './inquiryDraft';
 
+import { readReceipt } from './onboardingReceipt';
+import { exportReadingDrafts } from './readingDraft';
+
 async function headers(user = auth.currentUser): Promise<Record<string, string>> {
   const h: Record<string, string> = { 'Content-Type': 'application/json' };
   if (user) h.Authorization = `Bearer ${await user.getIdToken()}`;
@@ -86,7 +89,9 @@ export async function downloadExport(): Promise<void> {
     const data = await res.json() as Record<string, unknown>;
     assertCurrentUser();
     const localInquiryDrafts = exportInquiryDrafts(user.uid);
-    const blob = new Blob([JSON.stringify({ ...data, localInquiryDrafts }, null, 2)], { type: 'application/json' });
+    const localReadingDrafts = exportReadingDrafts(user.uid);
+    const localOnboardingReceipt = readReceipt(user.uid);
+    const blob = new Blob([JSON.stringify({ ...data, localInquiryDrafts, localReadingDrafts, localOnboardingReceipt }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     try {

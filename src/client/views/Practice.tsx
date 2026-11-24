@@ -52,6 +52,7 @@ export default function Practice() {
       <div className="practice-feature-label">A place to begin · not an assignment</div>
       <h2 id="starting-reading">{starter.question}</h2>
       <p>{starter.standfirst}</p>
+      {starter.id === 'trust' && <span className="practice-sketch" aria-hidden="true" />}
       <Link className="btn-primary" to={`/read/${starter.id}`}>Read the essay</Link>
       <p className="composer-hint">{starter.minutes} minutes of reading · no writing required to enter</p>
     </section>}

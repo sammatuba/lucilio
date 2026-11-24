@@ -7,7 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../../src/client/App';
-import type { DeskPayload } from '../../src/shared/schemas';
+import { DEFAULT_REFLECTION_PREFERENCES, type DeskPayload } from '../../src/shared/schemas';
+import { readReceipt, writeReceipt } from '../../src/client/lib/onboardingReceipt';
 
 const fakeUser = { uid: 'u1', displayName: 'Tester' };
 let deskPayload: DeskPayload | null = null;
@@ -25,7 +26,7 @@ vi.mock('../../src/client/lib/auth', () => ({
 }));
 vi.mock('../../src/client/lib/firebase', () => ({
   db: {},
-  auth: {},
+  auth: { get currentUser() { return fakeUser; } },
   appCheck: null,
   googleProvider: {},
   useEmulators: true,
@@ -137,6 +138,14 @@ describe('onboarding guard on every route (M2-6)', () => {
       </MemoryRouter>,
     );
     expect(await screen.findByText('The Director')).toBeTruthy();
+  });
+
+  it('opens the Notebook and clears the receipt if profile setup completed before reload', async () => {
+    deskPayload = baseDesk();
+    writeReceipt(fakeUser.uid, { entryId: crypto.randomUUID(), status: 'saved', preferences: DEFAULT_REFLECTION_PREFERENCES });
+    render(<MemoryRouter initialEntries={['/onboarding']}><App /></MemoryRouter>);
+    expect(await screen.findByRole('heading', { name: 'Notebook' })).toBeTruthy();
+    expect(readReceipt(fakeUser.uid)).toBeNull();
   });
 
   it('returning to /onboarding after onboarding leads back to the practice', async () => {

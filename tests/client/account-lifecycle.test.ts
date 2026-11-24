@@ -18,6 +18,10 @@ vi.mock('firebase/auth', async (importOriginal) => ({
 }));
 vi.mock('firebase/app-check', () => ({ getToken: vi.fn() }));
 
+import { writeReadingDraft, readReadingDraft } from '../../src/client/lib/readingDraft';
+import { writeReceipt, readReceipt } from '../../src/client/lib/onboardingReceipt';
+import { DEFAULT_REFLECTION_PREFERENCES } from '../../src/shared/schemas';
+
 function makeUser(uid: string): User {
   return { uid, getIdToken: vi.fn(async () => `token-${uid}`) } as unknown as User;
 }
@@ -93,6 +97,11 @@ describe('downloadExport (actual client function)', () => {
   it('downloads server data with only the initiating user’s current drafts and token', async () => {
     const ownDraft = storeDraft(userA.uid, 'My unsaved writing');
     storeDraft(userB.uid, 'Another account’s private writing');
+    const localOnboardingReceipt = { status: 'pending' as const, entryId: crypto.randomUUID(), bodyMd: 'Pending A entry', preferences: DEFAULT_REFLECTION_PREFERENCES };
+    writeReceipt(userA.uid, localOnboardingReceipt);
+    writeReceipt(userB.uid, { ...localOnboardingReceipt, bodyMd: 'Pending B entry' });
+    writeReadingDraft(userA.uid, 'essay', { question: 'My question?', attempts: [] });
+    writeReadingDraft(userB.uid, 'essay', { question: 'Private B question?', attempts: [] });
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ entries: ['saved writing'] }) } as Response);
 
     await downloadExport();
@@ -106,6 +115,8 @@ describe('downloadExport (actual client function)', () => {
     expect(blob.type).toBe('application/json');
     expect(JSON.parse(await blobText(blob))).toEqual({
       entries: ['saved writing'], localInquiryDrafts: [{ inquiryId: 'q1', draft: ownDraft }],
+      localReadingDrafts: [{ readingId: 'essay', question: 'My question?', attempts: [] }],
+      localOnboardingReceipt,
     });
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledOnce();
     expect(document.querySelector('a[download]')).toBeNull();
@@ -217,6 +228,37 @@ describe('signOut (actual client function)', () => {
     expect(readInquiryDraft(userB.uid, 'q1')).toEqual(otherDraft);
     expect(getNotebookDraft(userB.uid)).toBe('Keep B’s Notebook');
     expect(localStorage.getItem('unrelated')).toBe('keep');
+  });
+
+  it('requires discard consent for reading questions and clears only the owner’s questions and receipt', async () => {
+    for (const user of [userA, userB]) {
+      writeReadingDraft(user.uid, 'essay', { question: 'Question?', attempts: [] });
+      writeReceipt(user.uid, { entryId: crypto.randomUUID(), status: 'pending', preferences: DEFAULT_REFLECTION_PREFERENCES });
+    }
+    vi.mocked(window.confirm).mockReturnValueOnce(false).mockReturnValueOnce(true);
+    await signOut();
+    expect(fbSignOut).not.toHaveBeenCalled();
+    expect(readReadingDraft(userA.uid, 'essay')).toBeTruthy();
+    expect(readReceipt(userA.uid)).toBeTruthy();
+    await signOut();
+    expect(readReadingDraft(userA.uid, 'essay')).toBeNull();
+    expect(readReceipt(userA.uid)).toBeNull();
+    expect(readReadingDraft(userB.uid, 'essay')).toBeTruthy();
+    expect(readReceipt(userB.uid)).toBeTruthy();
+  });
+
+  it.each(['pending', 'saved'] as const)('asks before discarding a %s first-entry receipt even when it is the only recovery data', async (status) => {
+    const receipt = { entryId: crypto.randomUUID(), status, preferences: DEFAULT_REFLECTION_PREFERENCES,
+      ...(status === 'pending' ? { bodyMd: 'Pending first entry' } : {}) };
+    writeReceipt(userA.uid, receipt);
+    vi.mocked(window.confirm).mockReturnValueOnce(false).mockReturnValueOnce(true);
+    await signOut();
+    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('check your Notebook before saving another first entry'));
+    expect(fbSignOut).not.toHaveBeenCalled();
+    expect(readReceipt(userA.uid)).toEqual(receipt);
+    await signOut();
+    expect(readReceipt(userA.uid)).toBeNull();
+    expect(fbSignOut).toHaveBeenCalledOnce();
   });
 
   it('signs out with no draft prompt when there is no unsaved inquiry writing', async () => {
