@@ -6,8 +6,13 @@ import { Link } from 'react-router-dom';
 export default function About({ standalone = false }: { standalone?: boolean }) {
   const body = (
     <>
-      <h2 className="page-title">About Lucilio</h2>
-      <p className="page-sub">A place to read philosophy, follow a question, and return to your own writing.</p>
+      <header className="illustrated-header">
+        <div>
+          <h2 className="page-title">About Lucilio</h2>
+          <p className="page-sub">A place to read philosophy, follow a question, and return to your own writing.</p>
+        </div>
+        <img src="/correspondence-letter.webp" width="560" height="280" alt="" />
+      </header>
 
       <section className="about-section">
         <h3>A place to begin</h3>

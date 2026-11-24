@@ -8,11 +8,14 @@ export default function Philosophy() {
   const { pack, state, retry } = usePhilosophyPack();
   return (
     <section className="philosophy-page" aria-labelledby="philosophy-title">
-      <header className="philosophy-header">
-        <p className="philosophy-eyebrow">An open library</p>
-        <h1 id="philosophy-title">The philosophy map</h1>
-        <p>Follow a question, meet another tradition, or find a position that challenges your own.
-          Every entry is available; nothing is hidden by your interests.</p>
+      <header className="philosophy-header illustrated-header">
+        <div>
+          <p className="philosophy-eyebrow">An open library</p>
+          <h1 id="philosophy-title">The philosophy map</h1>
+          <p>Follow a question, meet another tradition, or find a position that challenges your own.
+            Every entry is available; nothing is hidden by your interests.</p>
+        </div>
+        <img src="/folded-map.webp" width="560" height="280" alt="" />
       </header>
       {state !== 'ready' ? <PhilosophyPackStatus state={state} retry={retry} />
         : pack && <PhilosophyMap pack={pack} />}

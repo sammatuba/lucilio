@@ -51,12 +51,17 @@ export default function Correspondents({ desk, refresh }: { desk: DeskPayload | 
 
   return (
     <>
-      <h2 className="page-title">Correspondents</h2>
-      <p className="page-sub">
-        These are the people who write to you. A correspondence is optional and slower than a
-        reflection: a reflection reads one entry you choose, while a correspondent writes a weekly
-        letter drawn from several.
-      </p>
+      <header className="illustrated-header">
+        <div>
+          <h2 className="page-title">Correspondents</h2>
+          <p className="page-sub">
+            These are the people who write to you. A correspondence is optional and slower than a
+            reflection: a reflection reads one entry you choose, while a correspondent writes a weekly
+            letter drawn from several.
+          </p>
+        </div>
+        <img src="/correspondence-letter.webp" width="560" height="280" alt="" />
+      </header>
       <p className="composer-hint" style={{ marginBottom: 26 }}>
         Ask a correspondent for a letter here or from your <Link to="/notebook">Notebook</Link> — once per
         correspondent per day. Read each volume below, or end a correspondence when it has run its

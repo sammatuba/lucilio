@@ -1,3 +1,4 @@
+import ReadingSketch from '../components/ReadingSketch';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { inquiryCreateSchema, inquiryDocSchema } from '../../shared/inquiry';
@@ -136,11 +137,14 @@ function ReadingArticle({ user, reading, pack }: { user: User; reading: Philosop
   return (
     <article className="reading-page" aria-labelledby="reading-title">
       <nav className="reading-navigation" aria-label="Reading navigation"><Link to="/philosophy">Explore the philosophy map</Link></nav>
-      <header className="reading-header" data-reading={reading.id}>
+      <header className="reading-header">
         <p className="philosophy-eyebrow">An original editorial essay · {reading.minutes} minutes of reading</p>
         <h1 id="reading-title">{reading.title}</h1>
         <p className="reading-standfirst">{reading.standfirst}</p>
-        <p className="reading-question">{reading.question}</p>
+        <div className="reading-invitation">
+          <p className="reading-question">{reading.question}</p>
+          <ReadingSketch id={reading.id} />
+        </div>
         <a href="#reading-begin-title">Jump to your question</a>
       </header>
       <details className="philosophy-coverage">

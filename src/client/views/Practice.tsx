@@ -1,3 +1,4 @@
+import ReadingSketch from '../components/ReadingSketch';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -52,7 +53,7 @@ export default function Practice() {
       <div className="practice-feature-label">A place to begin · not an assignment</div>
       <h2 id="starting-reading">{starter.question}</h2>
       <p>{starter.standfirst}</p>
-      {starter.id === 'trust' && <span className="practice-sketch" aria-hidden="true" />}
+      <ReadingSketch id={starter.id} />
       <Link className="btn-primary" to={`/read/${starter.id}`}>Read the essay</Link>
       <p className="composer-hint">{starter.minutes} minutes of reading · no writing required to enter</p>
     </section>}
@@ -66,7 +67,9 @@ export default function Practice() {
       </>}
     </section>
     {pack && <section aria-labelledby="other-doors"><h2 id="other-doors">Other ways in</h2><p className="page-sub">Your research can start a question. It does not decide where the question goes.</p>
-      <div className="practice-readings">{pack.readings.filter((r) => r.id !== starter?.id).map((r) => <Link className="practice-reading-card" key={r.id} to={`/read/${r.id}`}><span>{r.minutes} min · essay</span><h3>{r.title}</h3><p>{r.question}</p><span>Read and explore →</span></Link>)}</div>
+      <div className="practice-readings">{pack.readings.filter((r) => r.id !== starter?.id).map((r) => <Link className="practice-reading-card" key={r.id} to={`/read/${r.id}`}>
+        <ReadingSketch id={r.id} lazy />
+        <span>{r.minutes} min · essay</span><h3>{r.title}</h3><p>{r.question}</p><span>Read and explore →</span></Link>)}</div>
     </section>}
     <section className="practice-own-question" aria-labelledby="own-question"><h2 id="own-question">Something else on your mind?</h2><p>It does not need to belong to a school, fit your research, or have a clear answer.</p>
       <form onSubmit={(e) => { e.preventDefault(); void begin(); }}><label htmlFor="new-inquiry-question">Your question</label><input id="new-inquiry-question" value={question} maxLength={300} onChange={(e) => setQuestion(e.target.value)} placeholder="What am I trying to understand?" />

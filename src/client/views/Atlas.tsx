@@ -57,11 +57,16 @@ export default function Atlas() {
   const { pack, plates } = payload;
   return (
     <>
-      <h2 className="page-title">The Atlas</h2>
-      <p className="page-sub">
-        A small library of places, ideas, works, and lives — plates to read slowly. There is no feed here
-        and no recommendation: open the table of contents and choose.
-      </p>
+      <header className="illustrated-header">
+        <div>
+          <h2 className="page-title">The Atlas</h2>
+          <p className="page-sub">
+            A small library of places, ideas, works, and lives — plates to read slowly. There is no feed here
+            and no recommendation: open the table of contents and choose.
+          </p>
+        </div>
+        <img src="/folded-map.webp" width="560" height="280" alt="" />
+      </header>
       <p className="atlas-packline">
         Edition {plateRoman({ number: pack.editionNumber })} — “{pack.edition}” · {pack.plateCount} plates ·
         sources listed on every plate · pack {pack.version}

@@ -60,6 +60,9 @@ describe('Landing (production redirect sign-in)', () => {
     render(<MemoryRouter><Landing /></MemoryRouter>);
     expect(screen.getByText(/Read something worth thinking about/)).toBeTruthy();
     expect(screen.getByText(/Follow your own question/)).toBeTruthy();
+    const steps = screen.getByRole('list');
+    const signIn = screen.getByRole('button', { name: 'Sign in with Google' });
+    expect(steps.compareDocumentPosition(signIn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText(/Write, question, and revise/)).toBeTruthy();
   });
 
