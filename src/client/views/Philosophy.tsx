@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { inquiryIdSchema } from '../../shared/inquiry';
+import { libraryHref, linkedInquiry, returnToInquiry } from '../lib/inquiryNavigation';
 import type { PhilosophyNode, PhilosophyPack } from '../../shared/philosophy';
 import PhilosophySources, { PhilosophyMarkdown, PhilosophyPackStatus, usePhilosophyPack } from '../components/PhilosophySources';
 
@@ -8,6 +8,7 @@ export default function Philosophy() {
   const { pack, state, retry } = usePhilosophyPack();
   return (
     <section className="philosophy-page" aria-labelledby="philosophy-title">
+      <Link to="/explore">Back to Explore</Link>
       <header className="philosophy-header illustrated-header">
         <div>
           <p className="philosophy-eyebrow">An open library</p>
@@ -29,8 +30,7 @@ function PhilosophyMap({ pack }: { pack: PhilosophyPack }) {
   const area = params.get('area') ?? '';
   const nodeId = params.get('node');
   const inquiryParam = params.get('inquiry');
-  const inquiryId = inquiryIdSchema.safeParse(inquiryParam);
-  const inquiryPath = inquiryId.success ? `/inquiry/${encodeURIComponent(inquiryId.data)}` : null;
+  const inquiryId = linkedInquiry(params);
   const areas = [...new Set(pack.nodes.map((node) => node.area))].sort();
   const query = search.trim().toLocaleLowerCase();
   const visible = pack.nodes.filter((node) => (!area || node.area === area)
@@ -67,18 +67,18 @@ function PhilosophyMap({ pack }: { pack: PhilosophyPack }) {
 
   return (
     <>
-      {inquiryPath && (
+      {inquiryId && (
         <aside className="philosophy-context" aria-label="Your inquiry context">
-          <Link to={inquiryPath}>Back to your inquiry</Link>
+          <Link to={returnToInquiry(inquiryId, selected?.id)}>Back to your inquiry</Link>
           <p>Explore freely. Selecting a node here does not attach it or change your inquiry.</p>
           {selected && (
-            <Link to={`${inquiryPath}?${new URLSearchParams({ node: selected.id })}`}>
+            <Link to={`${returnToInquiry(inquiryId)}?${new URLSearchParams({ node: selected.id })}`}>
               Consider “{selected.title}” for your inquiry
             </Link>
           )}
         </aside>
       )}
-      {inquiryParam !== null && !inquiryPath && (
+      {inquiryParam !== null && !inquiryId && (
         <p className="philosophy-state" role="alert">This inquiry link is not valid. You can still browse the whole map.</p>
       )}
       <details className="philosophy-coverage" open>
@@ -150,7 +150,7 @@ function PhilosophyMap({ pack }: { pack: PhilosophyPack }) {
           <h3>Read further</h3>
           {selected.readingIds.length ? (
             <ul>{selected.readingIds.map((id) => (
-              <li key={id}><Link to={`/read/${encodeURIComponent(id)}`}>{pack.readings.find((reading) => reading.id === id)?.title}</Link></li>
+              <li key={id}><Link to={libraryHref(`/read/${encodeURIComponent(id)}`, inquiryId, selected.id)}>{pack.readings.find((reading) => reading.id === id)?.title}</Link></li>
             ))}</ul>
           ) : <p>No companion essay in this edition; the sources below offer a way further.</p>}
           <h3>Sources for this entry</h3>

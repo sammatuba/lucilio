@@ -12,15 +12,17 @@ import Notebook from '../../src/client/views/Notebook';
 
 type SnapshotNext = (snap: {
   docs: { data: () => unknown }[];
-  metadata: { hasPendingWrites: boolean };
+  metadata: { hasPendingWrites: boolean; fromCache?: boolean };
 }) => void;
 let snapshotNext: SnapshotNext = () => undefined;
+let snapshotError: (e: Error) => void;
 
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(() => ({})),
   query: vi.fn(() => ({})),
   orderBy: vi.fn(() => ({})),
-  onSnapshot: vi.fn((_q: unknown, next: SnapshotNext) => {
+  onSnapshot: vi.fn((_q: unknown, _options: unknown, next: SnapshotNext, error: (e: Error) => void) => {
+    snapshotError = error;
     snapshotNext = next;
     return () => undefined;
   }),
@@ -48,7 +50,7 @@ const user = { uid: 'u1', displayName: 'Tester' } as unknown as User;
 beforeEach(() => {
   cleanup();
   saveEntryMock.mockReset();
-  vi.mocked(api.get).mockResolvedValue({ preferences: DEFAULT_REFLECTION_PREFERENCES, weeklyLetters: false });
+  vi.mocked(api.get).mockReset().mockResolvedValue({ preferences: DEFAULT_REFLECTION_PREFERENCES, weeklyLetters: false });
   vi.mocked(api.post).mockReset();
   snapshotNext = () => undefined;
   setNotebookDraft(user.uid, '');
@@ -69,12 +71,16 @@ const baseDesk = {
   requestUsedToday: {},
 } as const;
 
-function mount() {
+function renderNotebook(path = '/notebook') {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <Notebook user={user} desk={baseDesk as never} refresh={() => undefined} />
     </MemoryRouter>,
   );
+}
+
+function mount() {
+  renderNotebook();
   act(() => {
     snapshotNext({ docs: [], metadata: { hasPendingWrites: false } });
   });
@@ -87,6 +93,66 @@ function type(text: string) {
 function value(): string {
   return (screen.getByRole('textbox') as HTMLTextAreaElement).value;
 }
+
+describe('Notebook entry links', () => {
+  it('waits for the linked entry, focuses and scrolls to it once, and preserves the composer', async () => {
+    vi.mocked(api.get).mockResolvedValue({ preferences: { ...DEFAULT_REFLECTION_PREFERENCES, autoReflect: true }, weeklyLetters: false });
+    setNotebookDraft(user.uid, 'Unfinished Notebook draft');
+    const scroll = vi.fn();
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scroll;
+    try {
+      renderNotebook('/notebook?entry=ack-B');
+      await screen.findByText('Remember preferences');
+      expect(screen.getByText(/Looking for this entry/)).toBeTruthy();
+      const docs = ['ack-A', 'ack-B'].map((id) => ({ data: () => ({ id, bodyMd: id, createdAt: '2026-11-18T00:00:00Z' }) }));
+      act(() => snapshotNext({ docs: docs.slice(0, 1), metadata: { hasPendingWrites: false, fromCache: true } }));
+      expect(screen.getByText(/Waiting for your Notebook to sync/)).toBeTruthy();
+      expect(scroll).not.toHaveBeenCalled();
+
+      act(() => snapshotNext({ docs, metadata: { hasPendingWrites: false, fromCache: false } }));
+      const entry = screen.getByRole('article', { name: 'Linked Notebook entry' });
+      expect(entry.contains(screen.getByText('ack-B'))).toBe(true);
+      expect(document.activeElement).toBe(entry);
+      expect(scroll.mock.contexts).toEqual([entry]);
+      expect(value()).toBe('Unfinished Notebook draft');
+
+      const composer = screen.getByRole('textbox');
+      composer.focus();
+      act(() => snapshotNext({ docs, metadata: { hasPendingWrites: false } }));
+      expect(document.activeElement).toBe(composer);
+      expect(scroll).toHaveBeenCalledTimes(1);
+      expect(api.post).not.toHaveBeenCalled();
+      expect(saveEntryMock).not.toHaveBeenCalled();
+    } finally {
+      HTMLElement.prototype.scrollIntoView = original;
+    }
+  });
+
+  it('reports a missing entry after sync and leaves other entries and the draft available', async () => {
+    setNotebookDraft(user.uid, 'My own words');
+    renderNotebook('/notebook?entry=removed');
+    await screen.findByText('Remember preferences');
+    act(() => snapshotNext({ docs: [{ data: () => ({ id: 'other', bodyMd: 'Other writing', createdAt: '2026-11-18T00:00:00Z' }) }], metadata: { hasPendingWrites: false } }));
+    expect(screen.getByText(/entry could not be found/i)).toBeTruthy();
+    expect(screen.getByText('Other writing')).toBeTruthy();
+    expect(screen.queryByRole('article', { name: 'Linked Notebook entry' })).toBeNull();
+    expect(value()).toBe('My own words');
+    expect(api.post).not.toHaveBeenCalled();
+    expect(saveEntryMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps a read failure separate from retrying a draft save', async () => {
+    renderNotebook('/notebook?entry=ack-B');
+    await screen.findByText('Remember preferences');
+    type('Keep this draft');
+    act(() => snapshotError(new Error('unavailable')));
+    expect(screen.getByRole('alert').textContent).toMatch(/could not be read/i);
+    expect(screen.queryByText(/entry could not be found/i)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Retry Save' })).toBeNull();
+    expect(value()).toBe('Keep this draft');
+  });
+});
 
 describe('Notebook composer integrity (§2.8, M1-6)', () => {
   it('keeps saving available and exposes a retry when preferences cannot load', async () => {
@@ -253,7 +319,10 @@ describe('Notebook composer integrity (§2.8, M1-6)', () => {
 describe('Notebook guides the reader (GLM UX recovery)', () => {
   it('the empty notebook explains the three moves and offers a way to begin', async () => {
     mount();
-    expect(screen.getByText(/New here\? How Lucilio works/i)).toBeTruthy();
+    const guide = screen.getByText(/New here\? How Lucilio works/i);
+    const composer = screen.getByRole('textbox');
+    expect(composer.compareDocumentPosition(guide) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(composer.compareDocumentPosition(screen.getByText('Your reflection preferences')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText(/Write and save\./i)).toBeTruthy();
     expect(screen.getByText(/Invite a reflection when you want one\./i)).toBeTruthy();
     expect(screen.getByText(/Optional: ask a correspondent for a letter\./i)).toBeTruthy();

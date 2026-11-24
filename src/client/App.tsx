@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react';
-import { Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { onAuthStateChanged, type User } from './lib/auth';
 import { auth } from './lib/firebase';
 import { clearReceipt, readReceipt } from './lib/onboardingReceipt';
@@ -20,6 +20,7 @@ import AccountMenu from './components/AccountMenu';
 import About from './views/About';
 import { CompassIcon, NotebookIcon } from './components/icons';
 import Practice from './views/Practice';
+import Explore, { Essays } from './views/Explore';
 import Inquiry from './views/Inquiry';
 import Philosophy from './views/Philosophy';
 import Reading from './views/Reading';
@@ -83,6 +84,7 @@ function Shell({ user }: { user: User }) {
     loadDesk();
   }, [user.uid]);
 
+  const section = location.pathname.split('/')[1] ?? '';
   const onboarding = location.pathname === '/onboarding';
 
   // Roadmap M2-6: onboarding comes before every surface. Until the desk proves
@@ -101,10 +103,17 @@ function Shell({ user }: { user: User }) {
           <img src="/lockup.svg" alt="Lucilio: understand yourself in a changing world" className="brand-lockup" />
           <span className="sr-only">Lucilio</span>
         </NavLink>
-        <nav className="nav">
-          <NavLink to="/" end aria-label="Practice"><span>Practice</span></NavLink>
-          <NavLink to="/philosophy" aria-label="Philosophy map"><CompassIcon /><span className="nav-label">Philosophy</span></NavLink>
-          <NavLink to="/notebook" aria-label="Notebook"><NotebookIcon /><span className="nav-label">Notebook</span></NavLink>
+        <nav className="nav" aria-label="Main navigation">
+          {[
+            { title: 'Practice', to: '/', active: section === '' || section === 'inquiry' },
+            { title: 'Explore', to: '/explore', icon: <CompassIcon />, active: ['explore', 'atlas', 'philosophy', 'read'].includes(section) },
+            { title: 'Notebook', to: '/notebook', icon: <NotebookIcon />, active: ['notebook', 'correspondents', 'letter'].includes(section) },
+          ].map(({ title, to, icon, active }) => (
+            <Link key={to} to={to} className={active ? 'active' : undefined}
+              aria-current={active ? (location.pathname === to ? 'page' : 'location') : undefined}>
+              {icon}<span>{title}</span>
+            </Link>
+          ))}
         </nav>
         <AccountMenu user={user} />
       </header>
@@ -127,6 +136,8 @@ function Shell({ user }: { user: User }) {
 
       <Routes>
         <Route path="/" element={guard(<Practice />)} />
+        <Route path="/explore" element={guard(<Explore />)} />
+        <Route path="/explore/essays" element={guard(<Essays />)} />
         <Route path="/philosophy" element={guard(<Philosophy />)} />
         <Route path="/read/:id" element={guard(<Reading user={user} />)} />
         <Route path="/inquiry/:id" element={guard(<Inquiry user={user} />)} />

@@ -169,7 +169,7 @@ function OnboardingForm({ user, onDone }: { user: User; onDone: () => void }) {
     {step === 0 ? <>
       <p className="onboard-step">Read first. Follow your own question.</p>
       <h2>The practice</h2>
-      <p>Read a substantial essay, explore philosophical perspectives, and develop your own reflections and arguments. You do not need an entry or any philosophy background to begin.</p>
+      <p>Practice is where you start or return to a question. In Explore, browse essays, the Philosophy Map, and Atlas. Open Notebook whenever you want to write freely.</p>
       <p>Plan for two–three hours across a week, without deadlines. Your question can change direction; no school or research topic decides where you must go.</p>
       <button className="btn-primary" disabled={busy} onClick={() => void finish(true)}>{busy ? 'Opening your practice…' : 'Open my practice — read first'}</button>
       {error && <p className="save-error" role="alert">{error}</p>}

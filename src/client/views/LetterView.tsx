@@ -63,6 +63,10 @@ export default function LetterView() {
 
   return (
     <div className="letter-page">
+      <nav className="inquiry-breadcrumbs" aria-label="Letter navigation">
+        {bundle.reflection ? <Link to="/notebook">Notebook</Link>
+          : <Link to={`/correspondents/${bundle.cid}`}>Back to correspondence</Link>}
+      </nav>
       <div className="letter-head">
         <div className="correspondent">{bundle.reflection ? 'Lucilio reflection' : card?.name ?? bundle.cid}</div>
         <div className="date">

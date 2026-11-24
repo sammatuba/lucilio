@@ -17,8 +17,8 @@ export default function About({ standalone = false }: { standalone?: boolean }) 
       <section className="about-section">
         <h3>A place to begin</h3>
         <p>
-          Practice opens with an essay and a question. Borrow that question or bring your own, explore a
-          competing view in the philosophy map, and keep your reflections and revisions together in an inquiry.
+          On your first visit, Practice opens with an essay and a question. Bring a question of your own or
+          borrow the reading’s. When you return, your latest open question is waiting.
           You can also write freely in the Notebook and invite a reflection when you want one.
         </p>
         {!standalone && <p><Link to="/">Open your practice</Link></p>}
@@ -103,8 +103,10 @@ export default function About({ standalone = false }: { standalone?: boolean }) 
         <h3>What you will find here</h3>
         <ul>
           <li>
-            <strong>Practice and the philosophy map.</strong> Read a sourced essay, compare perspectives,
-            and revisit a question as your thinking changes.
+            <strong>Practice.</strong> Follow your own question and keep your writing and revisions together.
+          </li>
+          <li>
+            <strong>Explore.</strong> Browse Essays, the Philosophy Map, and Atlas.
           </li>
           <li>
             <strong>The Notebook.</strong> Write and save with no AI involved. Invite a reflection on any

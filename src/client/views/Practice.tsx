@@ -42,41 +42,41 @@ export default function Practice() {
   }
   const starter = pack?.readings.find((r) => r.id === 'trust') ?? pack?.readings[0];
   const active = inquiries.filter((q) => q.status === 'active');
+  // The inquiry index returns the most recently updated items first.
+  const [latest, ...otherActive] = active;
   const resting = inquiries.filter((q) => q.status !== 'active');
   return <main className="practice-page">
-    <p className="practice-eyebrow">Read widely. Think for yourself.</p>
-    <h1 className="practice-title">A question worth staying with.</h1>
-    <p className="practice-intro">Philosophy begins with something that catches your attention. Read first, follow your own question, and give your thoughts room to become clearer.</p>
+    <h1 className="practice-title">Practice</h1>
     {error && <div className="save-error" role="alert"><span>{error}</span><button className="btn-quiet" onClick={() => setAttempt((n) => n + 1)}>Retry practice</button></div>}
     {!loaded && !error && <p role="status">Opening your practice…</p>}
-    {starter && <section className="practice-feature" aria-labelledby="starting-reading">
-      <div className="practice-feature-label">A place to begin · not an assignment</div>
+    {latest && <section className="practice-feature" aria-labelledby="resume-question">
+      <div className="practice-feature-label">Your latest open question</div>
+      <h2 id="resume-question">{latest.question}</h2>
+      <Link className="btn-primary" to={`/inquiry/${latest.id}`}>Continue this question</Link>
+    </section>}
+    {!latest && starter && <section className="practice-feature" aria-labelledby="starting-reading">
+      <div className="practice-feature-label">A reading to begin with</div>
       <h2 id="starting-reading">{starter.question}</h2>
       <p>{starter.standfirst}</p>
       <ReadingSketch id={starter.id} />
       <Link className="btn-primary" to={`/read/${starter.id}`}>Read the essay</Link>
-      <p className="composer-hint">{starter.minutes} minutes of reading · no writing required to enter</p>
+      <p className="composer-hint">{starter.minutes} minutes of reading</p>
     </section>}
-    <section className="practice-threads" aria-labelledby="your-inquiries">
-      <div className="practice-section-heading"><h2 id="your-inquiries">Your open questions</h2><Link to="/philosophy">Explore the philosophy map</Link></div>
-      {loaded && active.length === 0 && <p className="page-sub">No inquiry needs you yet. Begin with a reading, or bring a question of your own below.</p>}
-      <div className="inquiry-list">{active.map((q) => <InquiryCard key={q.id} inquiry={q} />)}</div>
+    {(otherActive.length > 0 || resting.length > 0) && <section className="practice-threads" aria-labelledby="your-inquiries">
+      <h2 id="your-inquiries">Your other questions</h2>
+      <div className="inquiry-list">{otherActive.map((q) => <InquiryCard key={q.id} inquiry={q} />)}</div>
       {resting.length > 0 && <>
         <button className="btn-quiet" aria-expanded={showResting} onClick={() => setShowResting((v) => !v)}>{showResting ? 'Hide' : 'Show'} paused and resting inquiries ({resting.length})</button>
         {showResting && <div className="inquiry-list">{resting.map((q) => <InquiryCard key={q.id} inquiry={q} />)}</div>}
       </>}
-    </section>
-    {pack && <section aria-labelledby="other-doors"><h2 id="other-doors">Other ways in</h2><p className="page-sub">Your research can start a question. It does not decide where the question goes.</p>
-      <div className="practice-readings">{pack.readings.filter((r) => r.id !== starter?.id).map((r) => <Link className="practice-reading-card" key={r.id} to={`/read/${r.id}`}>
-        <ReadingSketch id={r.id} lazy />
-        <span>{r.minutes} min · essay</span><h3>{r.title}</h3><p>{r.question}</p><span>Read and explore →</span></Link>)}</div>
     </section>}
-    <section className="practice-own-question" aria-labelledby="own-question"><h2 id="own-question">Something else on your mind?</h2><p>It does not need to belong to a school, fit your research, or have a clear answer.</p>
+    <section className="practice-own-question" aria-labelledby="own-question"><h2 id="own-question">Begin with your own question</h2>
       <form onSubmit={(e) => { e.preventDefault(); void begin(); }}><label htmlFor="new-inquiry-question">Your question</label><input id="new-inquiry-question" value={question} maxLength={300} onChange={(e) => setQuestion(e.target.value)} placeholder="What am I trying to understand?" />
         <button className="btn-quiet" disabled={busy || !question.trim()}>{busy ? 'Opening inquiry…' : 'Begin with my question'}</button></form>
       {createError && <p role="alert">{createError}</p>}
-      <p><Link to="/notebook">Or write freely in your Notebook</Link></p>
+      <p><Link to="/notebook">Write freely in Notebook</Link></p>
     </section>
+    <p><Link to="/explore">Browse essays, the Philosophy Map, and Atlas</Link></p>
     <details className="practice-rhythm"><summary>A gentle weekly rhythm · 2–3 hours</summary><p>Read for 40 minutes. Reflect for 25. Compare and explore for 30. Write or revise for 40. Leave 15 to notice what changed.</p><p>These are suggestions, not timers. Stay with an inquiry for several weeks, branch, pause, or leave it unresolved. There is no streak, deadline, or backlog.</p></details>
   </main>;
 }

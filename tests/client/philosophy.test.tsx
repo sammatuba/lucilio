@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { Link, MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import InquiryView from '../../src/client/views/Inquiry';
 import Philosophy from '../../src/client/views/Philosophy';
 import Reading from '../../src/client/views/Reading';
 import { philosophyPackSchema, type PhilosophyPack } from '../../src/shared/philosophy';
@@ -47,14 +48,14 @@ function InquiryDestination() {
   const { id } = useParams();
   return <h1>Inquiry destination: {id}</h1>;
 }
-function open(path: string, navigation = false) {
+function open(path: string, { navigation = false, showInquiry = false } = {}) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       {navigation && <nav><Link to="/read/other-reading">Another reading</Link><Link to="/philosophy">Leave reading</Link></nav>}
       <Routes>
         <Route path="/philosophy" element={<Philosophy />} />
         <Route path="/read/:id" element={<Reading user={session.currentUser} />} />
-        <Route path="/inquiry/:id" element={<InquiryDestination />} />
+        <Route path="/inquiry/:id" element={showInquiry ? <InquiryView user={session.currentUser} /> : <InquiryDestination />} />
       </Routes>
       <Location />
     </MemoryRouter>,
@@ -94,7 +95,8 @@ describe('independently browsable philosophy map', () => {
     expect(screen.getByText(pack.coverageNote)).toBeTruthy();
     expect(screen.getByText('source-guided orientation').tagName).toBe('STRONG');
     expect(screen.getByRole('heading', { level: 2, name: pack.nodes[0]!.title })).toBeTruthy();
-    expect(screen.getByRole('link', { name: pack.readings[0]!.title }).getAttribute('href')).toBe('/read/test-reading');
+    expect(screen.getByRole('link', { name: pack.readings[0]!.title }).getAttribute('href')).toBe('/read/test-reading?node=reason');
+    expect(screen.getByRole('link', { name: 'Back to Explore' }).getAttribute('href')).toBe('/explore');
     expect(screen.getAllByRole('link', { name: pack.nodes[1]!.title }).length).toBeGreaterThan(0);
     expect(api.post).not.toHaveBeenCalled();
   });
@@ -122,7 +124,7 @@ describe('independently browsable philosophy map', () => {
     expect(within(relations).getByText('contrasts')).toBeTruthy();
     expect(within(relations).getByText(pack.sources[1]!.locator)).toBeTruthy();
     expect(screen.getByRole('img', { name: /Connections around Reason/ })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to your inquiry' }).getAttribute('href')).toBe('/inquiry/my-inquiry');
+    expect(screen.getByRole('link', { name: 'Back to your inquiry' }).getAttribute('href')).toBe('/inquiry/my-inquiry?mapNode=reason');
     fireEvent.click(within(relations).getByRole('link', { name: pack.nodes[1]!.title }));
     expect(screen.getByRole('heading', { level: 2, name: pack.nodes[1]!.title })).toBeTruthy();
     expect(screen.getByText(/outside your current filters/)).toBeTruthy();
@@ -203,6 +205,69 @@ describe('independently browsable philosophy map', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await screen.findByRole('list', { name: 'Map entries' });
     expect(api.get).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('inquiry, map and essay continuity', () => {
+  it('reopens the selected concept and the same unsent inquiry after reloading the essay', async () => {
+    const pack = fixture();
+    const inquiry = saved({
+      id: 'origin', question: 'A private question?', readingId: 'test-reading', parentId: null, nodeIds: ['reason'],
+    });
+    vi.mocked(api.get).mockImplementation(async (path) => {
+      if (path === '/api/philosophy') return pack;
+      if (path === '/api/inquiries/origin') return { inquiry, writings: [], branches: [] };
+      throw new Error('Unexpected read');
+    });
+
+    const first = open('/inquiry/origin', { showInquiry: true });
+    const editor = await screen.findByLabelText('Your writing');
+    fireEvent.change(editor, { target: { value: 'My unfinished thought.' } });
+    expect(screen.getByRole('link', { name: 'Return to the reading' }).getAttribute('href'))
+      .toBe('/read/test-reading?inquiry=origin');
+    fireEvent.click(screen.getByRole('link', { name: 'Reason and testimony' }));
+    const connections = await screen.findByRole('list', { name: 'All explained connections' });
+    fireEvent.click(within(connections).getByRole('link', { name: 'Community and obligation' }));
+    fireEvent.click(screen.getByRole('link', { name: 'An obligation reconsidered' }));
+    await screen.findByRole('heading', { name: 'An obligation reconsidered' });
+    const essayUrl = screen.getByTestId('location').textContent!;
+    expect(essayUrl).toBe('/read/other-reading?inquiry=origin&node=community');
+    first.unmount();
+
+    open(essayUrl, { showInquiry: true });
+    fireEvent.click(await screen.findByRole('link', { name: 'Back to Community and obligation on the map' }));
+    await screen.findByRole('heading', { level: 2, name: 'Community and obligation' });
+    expect(screen.getByRole('link', { name: 'Back to your inquiry' }).getAttribute('href'))
+      .toBe('/inquiry/origin?mapNode=community');
+    fireEvent.click(screen.getByRole('link', { name: 'An obligation reconsidered' }));
+    await screen.findByRole('heading', { name: 'An obligation reconsidered' });
+    expect(screen.getByRole('link', { name: 'Community and obligation' }).getAttribute('href'))
+      .toBe('/philosophy?inquiry=origin&node=community');
+    fireEvent.click(screen.getByRole('link', { name: 'Back to your inquiry' }));
+    await screen.findByRole('heading', { name: inquiry.question });
+    expect((screen.getByLabelText('Your writing') as HTMLTextAreaElement).value).toBe('My unfinished thought.');
+    expect(screen.getByRole('link', { name: 'Explore a philosophical connection' }).getAttribute('href'))
+      .toBe('/philosophy?inquiry=origin&node=community');
+    expect(screen.queryByRole('button', { name: 'Keep this connection' })).toBeNull();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('keeps the return route usable when the essay cannot load after a reload', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('offline'));
+    open('/read/test-reading?inquiry=origin&node=reason');
+    await screen.findByRole('alert');
+    expect(screen.getByRole('link', { name: 'Back to your inquiry' }).getAttribute('href'))
+      .toBe('/inquiry/origin?mapNode=reason');
+  });
+
+  it.each(['', '?inquiry=bad%2Fid&node=missing'])('uses the Essays collection for a standalone essay%s', async (query) => {
+    open('/read/test-reading' + query);
+    await screen.findByRole('heading', { name: 'A question between people' });
+    expect(screen.getByRole('link', { name: 'Back to Essays' }).getAttribute('href')).toBe('/explore/essays');
+    expect(screen.queryByRole('link', { name: 'Back to your inquiry' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Community and obligation' }).getAttribute('href'))
+      .toBe('/philosophy?node=community');
+    expect(api.post).not.toHaveBeenCalled();
   });
 });
 
@@ -429,7 +494,7 @@ describe('reading-first practice', () => {
   it('blocks duplicate submissions and does not navigate away from a newer reading when a save finishes', async () => {
     let resolve!: (value: unknown) => void;
     vi.mocked(api.post).mockReturnValue(new Promise((done) => { resolve = done; }));
-    open('/read/test-reading', true);
+    open('/read/test-reading', { navigation: true });
     const question = await screen.findByRole('textbox');
     fireEvent.submit(question.closest('form')!);
     fireEvent.submit(question.closest('form')!);
@@ -471,7 +536,7 @@ describe('reading-first practice', () => {
   it('ignores a pack response after leaving the reading view', async () => {
     let resolve!: (value: unknown) => void;
     vi.mocked(api.get).mockReturnValueOnce(new Promise((done) => { resolve = done; }));
-    open('/read/test-reading', true);
+    open('/read/test-reading', { navigation: true });
     fireEvent.click(screen.getByRole('link', { name: 'Leave reading' }));
     await screen.findByRole('list', { name: 'Map entries' });
     await act(async () => { resolve(fixture()); });

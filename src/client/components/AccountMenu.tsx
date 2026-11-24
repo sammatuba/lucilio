@@ -59,7 +59,6 @@ export default function AccountMenu({ user }: { user: User }) {
           <Link to="/trust" role="menuitem" onClick={() => setOpen(false)}>
             <ShieldIcon size={16} />Trust Center
           </Link>
-          <Link to="/atlas" role="menuitem" onClick={() => setOpen(false)}>Atlas · places, works, and lives</Link>
           <Link to="/about" role="menuitem" onClick={() => setOpen(false)}>
             <LetterIcon size={16} /> About Lucilio
           </Link>

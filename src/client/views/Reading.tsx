@@ -1,11 +1,12 @@
 import ReadingSketch from '../components/ReadingSketch';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { inquiryCreateSchema, inquiryDocSchema } from '../../shared/inquiry';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { inquiryCreateSchema, inquiryDocSchema, inquiryIdSchema } from '../../shared/inquiry';
 import type { PhilosophyPack, PhilosophyReading } from '../../shared/philosophy';
 import type { User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { readReadingDraft, removeReadingDraft, writeReadingDraft, withReadingDraftLock, type ReadingDraft } from '../lib/readingDraft';
+import { libraryHref, linkedInquiry, returnToInquiry } from '../lib/inquiryNavigation';
 import { api } from '../lib/api';
 import { inquiryRequest } from '../lib/inquiryDraft';
 import PhilosophySources, { PhilosophyMarkdown, PhilosophyPackStatus, usePhilosophyPack } from '../components/PhilosophySources';
@@ -15,9 +16,24 @@ export default function Reading({ user }: { user: User }) {
   const { pack, state, retry } = usePhilosophyPack();
   const reading = pack?.readings.find((item) => item.id === id);
 
+  const [params] = useSearchParams();
+  const inquiryId = linkedInquiry(params);
+  const nodeParam = params.get('node');
+  const mapNode = pack?.nodes.find((node) => node.id === nodeParam);
+  // A reader may return before the edition loads, including while offline.
+  const returnNode = pack ? mapNode?.id : inquiryIdSchema.safeParse(nodeParam).data;
+  const navigation = (
+    <nav className="reading-navigation inquiry-breadcrumbs" aria-label="Reading navigation">
+      {inquiryId && <Link to={returnToInquiry(inquiryId, returnNode)}>Back to your inquiry</Link>}
+      {mapNode && <Link to={libraryHref('/philosophy', inquiryId, mapNode.id)}>Back to {mapNode.title} on the map</Link>}
+      <Link to="/explore/essays">Back to Essays</Link>
+    </nav>
+  );
+
   if (state !== 'ready') {
     return (
       <section className="reading-page" aria-labelledby="reading-state-title">
+        {navigation}
         <h1 id="reading-state-title">The reading room</h1>
         <PhilosophyPackStatus state={state} retry={retry} />
       </section>
@@ -26,23 +42,30 @@ export default function Reading({ user }: { user: User }) {
   if (!pack || !reading) {
     return (
       <section className="reading-page" aria-labelledby="reading-missing-title">
+        {navigation}
         <h1 id="reading-missing-title">Reading not found</h1>
         <p role="status">That reading is not in this edition. Nothing has been created or changed.</p>
-        <Link to="/philosophy">Browse the philosophy map</Link>
+        <Link to={libraryHref('/philosophy', inquiryId, mapNode?.id)}>Browse the philosophy map</Link>
         {pack && <>
           <h2>Choose another reading</h2>
           <ul>{pack.readings.map((item) => (
-            <li key={item.id}><Link to={`/read/${encodeURIComponent(item.id)}`}>{item.title}</Link></li>
+            <li key={item.id}><Link to={libraryHref(`/read/${encodeURIComponent(item.id)}`, inquiryId, mapNode?.id)}>{item.title}</Link></li>
           ))}</ul>
         </>}
       </section>
     );
   }
   // Reset question and operation IDs when React reuses this route.
-  return <ReadingArticle key={JSON.stringify([user.uid, reading.id])} user={user} reading={reading} pack={pack} />;
+  return <ReadingArticle key={JSON.stringify([user.uid, reading.id])} user={user} reading={reading} pack={pack} inquiryId={inquiryId} navigation={navigation} />;
 }
 
-function ReadingArticle({ user, reading, pack }: { user: User; reading: PhilosophyReading; pack: PhilosophyPack }) {
+function ReadingArticle({ user, reading, pack, inquiryId, navigation }: {
+  user: User;
+  reading: PhilosophyReading;
+  pack: PhilosophyPack;
+  inquiryId?: string;
+  navigation: ReactNode;
+}) {
   const navigate = useNavigate();
   const [initial] = useState(() => {
     try { return { draft: readReadingDraft(user.uid, reading.id), unreadable: false }; }
@@ -136,7 +159,7 @@ function ReadingArticle({ user, reading, pack }: { user: User; reading: Philosop
 
   return (
     <article className="reading-page" aria-labelledby="reading-title">
-      <nav className="reading-navigation" aria-label="Reading navigation"><Link to="/philosophy">Explore the philosophy map</Link></nav>
+      {navigation}
       <header className="reading-header">
         <p className="philosophy-eyebrow">An original editorial essay · {reading.minutes} minutes of reading</p>
         <h1 id="reading-title">{reading.title}</h1>
@@ -232,7 +255,7 @@ function ReadingArticle({ user, reading, pack }: { user: User; reading: Philosop
       <section className="reading-map-links" aria-labelledby="reading-map-title">
         <h2 id="reading-map-title">Explore the ideas</h2>
         <ul>{reading.nodeIds.map((id) => (
-          <li key={id}><Link to={`/philosophy?${new URLSearchParams({ node: id })}`}>{pack.nodes.find((node) => node.id === id)?.title}</Link></li>
+          <li key={id}><Link to={libraryHref('/philosophy', inquiryId, id)}>{pack.nodes.find((node) => node.id === id)?.title}</Link></li>
         ))}</ul>
       </section>
       <section className="reading-sources" aria-labelledby="reading-sources-title">

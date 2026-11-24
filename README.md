@@ -8,10 +8,9 @@ write reflections, arguments, and revisions without losing earlier versions.
 Structure the practice, not the destination: AI safety can be an entry point, but
 personal questions can lead anywhere.
 
-**Practice** is home; the **Philosophy** map and **Notebook** are directly available
-in the navigation. The new inquiry practice works without AI. Optional Notebook
-reflection, the **Atlas**, and weekly correspondence remain available separately;
-automatic reflection and weekly letters are off by default for new users.
+**Practice** is home. **Explore** holds Essays, the Philosophy Map, and Atlas.
+**Notebook** opens your journal and optional correspondence. The inquiry practice works without AI.
+For new users, automatic reflection and weekly letters are off by default.
 
 Built for the **Google Cloud Run AI challenge** ("Build a User-Authenticated AI Application"): Firebase Auth + Gemini + Firestore + Cloud Run, deployed as a single service.
 
@@ -81,7 +80,7 @@ are an optional, compatible practice with three correspondents:
 | **The Future Self** | A letter from who your notebook implies you are becoming. Every forward-looking claim traces to a cited entry and carries a plain **extrapolation label** — never a prediction or prophecy. | Future-self continuity research |
 | **The Foreign Correspondent** | Dispatches connecting your current thinking to the wider world — books, fields, historical parallels. Max 2–3 connections per letter, each tied to something you actually wrote; claims dated, sources never invented. | The wider world of ideas |
 
-**Primary navigation:** **Practice** (`/`) for reading invitations and saved inquiries; **Philosophy** (`/philosophy`) for the searchable source map; **Notebook** (`/notebook`) for journal entries, invited reflection, and the correspondence tray. Readings and inquiries have their own deep links. The account menu retains **Atlas**, **Settings**, **Trust Center**, and **About**; correspondence volumes and letters remain reachable from the Notebook. Atlas offers sourced plates and an opt-in “Write from this” bridge to the Notebook.
+**Primary navigation.** Practice (`/`) opens with an essay for a new reader and the latest active question for a returning reader. Explore (`/explore`) collects Essays, the Philosophy Map, and Atlas. Notebook (`/notebook`) holds free writing, reflections, and correspondence. A reader can follow a map connection into an essay and return to the same inquiry, carry an Atlas passage into a draft, or explicitly copy one saved piece and open its entry in Notebook. Readings, inquiries, map nodes, and Atlas plates retain their direct links.
 
 New users can choose **Open my practice — read first** without writing an entry or generating welcome letters. **Begin with writing instead** preserves the optional Notebook route. Export includes saved inquiries, revisions, and the current account’s inquiry drafts and reading-question drafts on this device. Draft cleanup on sign-out or account deletion requires working browser storage; failures show recovery guidance rather than claiming erasure succeeded.
 

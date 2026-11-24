@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { api, ApiError } from '../lib/api';
+import { libraryHref } from '../lib/inquiryNavigation';
 import { renderMarkdown } from '../lib/markdown';
 import { inquiryDetailSchema, inquiryDocSchema, inquiryWritingSchema, writingModes, type InquiryDetail, type InquiryWriting, type WritingMode } from '../../shared/inquiry';
 import { philosophyPackSchema, type PhilosophyPack } from '../../shared/philosophy';
@@ -63,14 +64,15 @@ function InquiryPage({ id, user }: { id: string; user: User }) {
   const { inquiry } = data;
   const reading = pack.readings.find((r) => r.id === inquiry.readingId);
   const suggestedNode = pack.nodes.find((n) => n.id === params.get('node'));
+  const mapNode = suggestedNode ?? pack.nodes.find((n) => n.id === params.get('mapNode'));
   return <main className="inquiry-page">
     <nav className="inquiry-breadcrumbs" aria-label="Inquiry navigation"><Link to="/">Your practice</Link>{inquiry.parentId && <Link to={`/inquiry/${inquiry.parentId}`}>Return to the parent question</Link>}</nav>
     {location.state?.readingDraftCleanupFailed && <p role="status">Your inquiry is saved. This browser could not clear the reading draft from this device.</p>}
     <p className="practice-eyebrow">An open inquiry · {inquiry.status}</p><h1 className="inquiry-title">{inquiry.question}</h1>
     <p className="practice-intro">Stay with this question, let it change, or follow something unexpected. There is no deadline and no required conclusion.</p>
     <div className="inquiry-actions">
-      {reading && <Link className="btn-quiet" to={`/read/${reading.id}`}>Return to the reading</Link>}
-      <Link className="btn-quiet" to={`/philosophy?inquiry=${id}`}>Explore a philosophical connection</Link>
+      {reading && <Link className="btn-quiet" to={libraryHref(`/read/${encodeURIComponent(reading.id)}`, id, mapNode?.id)}>Return to the reading</Link>}
+      <Link className="btn-quiet" to={libraryHref('/philosophy', id, mapNode?.id)}>Explore a philosophical connection</Link>
       {inquiry.status === 'active' ? <button className="btn-quiet" disabled={updating} onClick={() => void update({ status: 'paused' })}>Pause inquiry</button> : <button className="btn-primary" disabled={updating} onClick={() => void update({ status: 'active' })}>Resume inquiry</button>}
       {inquiry.status !== 'resting' && <button className="btn-quiet" disabled={updating} onClick={() => void update({ status: 'resting' })}>Let it rest</button>}
     </div>
@@ -79,7 +81,7 @@ function InquiryPage({ id, user }: { id: string; user: User }) {
     {updateError && <div role="alert" className="save-error"><span>{updateError}</span><button className="btn-quiet" onClick={() => { setAttempt((n) => n + 1); setUpdateError(''); }}>Reload inquiry</button></div>}
     {loadError && <p role="alert">{loadError}</p>}
     {suggestedNode && !inquiry.nodeIds.includes(suggestedNode.id) && <section className="inquiry-connection"><h2>A connection you chose</h2><p><strong>{suggestedNode.title}</strong> — {suggestedNode.summary}</p><button className="btn-quiet" disabled={updating || inquiry.nodeIds.length >= 24} onClick={() => void update({ nodeIds: [...inquiry.nodeIds, suggestedNode.id] })}>Keep this connection</button><p className="composer-hint">A personal association, not a claim that this tradition agrees with you.</p></section>}
-    {inquiry.nodeIds.length > 0 && <div className="inquiry-concepts" aria-label="Your philosophical connections">{inquiry.nodeIds.map((nodeId) => <Link key={nodeId} to={`/philosophy?node=${nodeId}&inquiry=${id}`}>{pack.nodes.find((n) => n.id === nodeId)?.title ?? nodeId}</Link>)}</div>}
+    {inquiry.nodeIds.length > 0 && <div className="inquiry-concepts" aria-label="Your philosophical connections">{inquiry.nodeIds.map((nodeId) => <Link key={nodeId} to={libraryHref('/philosophy', id, nodeId)}>{pack.nodes.find((n) => n.id === nodeId)?.title ?? nodeId}</Link>)}</div>}
     <InquiryEditor user={user} inquiryId={id} data={data} pack={pack} onSaved={(writing) => setData((d) => d ? { ...d, writings: d.writings.some((w) => w.id === writing.id) ? d.writings : [...d.writings, writing] } : d)} />
     <section className="inquiry-branch" aria-labelledby="branch-heading"><p className="practice-eyebrow">Make room for an unexpected thought</p><h2 id="branch-heading">Follow a different question</h2><p>A branch keeps this inquiry and its writing intact. It does not have to relate to research, or return to where you started.</p><form onSubmit={(e) => { e.preventDefault(); void createBranch(); }}><label htmlFor="branch-question">The question I want to follow</label><input id="branch-question" value={branch} maxLength={300} onChange={(e) => setBranch(e.target.value)} placeholder="What does this bring up for me?" /><button className="btn-quiet" disabled={branchBusy || !branch.trim()}>{branchBusy ? 'Opening branch…' : 'Follow this question'}</button></form>{branchError && <p role="alert">{branchError}</p>}
       {data.branches.length > 0 && <><h3>Questions that grew from here</h3><ul>{data.branches.map((q) => <li key={q.id}><Link to={`/inquiry/${q.id}`}>{q.question}</Link></li>)}</ul></>}
@@ -107,7 +109,7 @@ function InquiryEditor({ user, inquiryId, data, pack, onSaved }: { user: User; i
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [copying, setCopying] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copiedEntries, setCopiedEntries] = useState(() => new Map<string, string>());
   const [copyError, setCopyError] = useState('');
   const editor = useRef<HTMLTextAreaElement>(null);
   const mounted = useRef(true);
@@ -151,8 +153,11 @@ function InquiryEditor({ user, inquiryId, data, pack, onSaved }: { user: User; i
   async function copy(writing: InquiryWriting) {
     if (copying) return;
     setCopying(writing.id); setCopyError('');
-    try { await inquiryRequest(api.post(`/api/inquiries/${inquiryId}/writings/${writing.id}/notebook`)); if (mounted.current) setCopied(writing.id); }
-    catch { if (mounted.current) setCopyError('The Notebook copy was not confirmed. Your inquiry writing is safe; retry to check or copy it.'); }
+    try {
+      const { entryId } = await inquiryRequest(api.post<{ entryId: string }>(`/api/inquiries/${inquiryId}/writings/${writing.id}/notebook`));
+      if (typeof entryId !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(entryId)) throw new Error('Missing Notebook entry ID');
+      if (mounted.current) setCopiedEntries((entries) => new Map(entries).set(writing.id, entryId));
+    } catch { if (mounted.current) setCopyError('The Notebook copy was not confirmed. Your inquiry writing is safe; retry to check or copy it.'); }
     finally { if (mounted.current) setCopying(null); }
   }
   const reading = pack.readings.find((r) => r.id === data.inquiry.readingId);
@@ -178,7 +183,9 @@ function InquiryEditor({ user, inquiryId, data, pack, onSaved }: { user: User; i
         {writing.revisesId && <p><a href={`#writing-${writing.revisesId}`}>Revision of an earlier piece</a></p>}
         <div className="letter-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(writing.bodyMd) }} />
         <div className="inquiry-actions"><button className="btn-quiet" onClick={() => revise(writing)}>Revise this piece</button><button className="btn-quiet" onClick={() => downloadWriting(writing.bodyMd)}>Download piece</button></div>
-        <details className="inquiry-copy"><summary>Optional: take this piece to the Notebook</summary><p>This copies only this piece, not the whole inquiry. It does not request AI. In the Notebook you can separately invite a reflection; if weekly letters are enabled, the copied entry can be included in them.</p>{byteLength(writing.bodyMd) > 10 * 1024 ? <p>The Notebook limit is 10 KB. This piece is longer; download it or create a shorter version. Nothing will be truncated.</p> : <button className="btn-quiet" disabled={!!copying} onClick={() => void copy(writing)}>{copying === writing.id ? 'Copying…' : 'Copy this piece to Notebook'}</button>}{copied === writing.id && <p role="status">Copied. <Link to="/notebook">Open Notebook</Link> to choose whether to invite a reflection.</p>}</details>
+        <details className="inquiry-copy"><summary>Optional: take this piece to the Notebook</summary><p>This copies only this piece, not the whole inquiry. It does not request AI. In the Notebook you can separately invite a reflection; if weekly letters are enabled, the copied entry can be included in them.</p>{byteLength(writing.bodyMd) > 10 * 1024 ? <p>The Notebook limit is 10 KB. This piece is longer; download it or create a shorter version. Nothing will be truncated.</p> : <button className="btn-quiet" disabled={!!copying} onClick={() => void copy(writing)}>{copying === writing.id ? 'Copying…' : 'Copy this piece to Notebook'}</button>}
+          {copiedEntries.has(writing.id) && <p role="status">Copied to Notebook. <Link to={`/notebook?entry=${copiedEntries.get(writing.id)}`}>Open the copied entry</Link></p>}
+        </details>
       </article>)}
       {copyError && <p role="alert">{copyError}</p>}
     </section>

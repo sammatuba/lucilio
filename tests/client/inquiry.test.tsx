@@ -50,10 +50,23 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe('Personal inquiry journey', () => {
   it('starts from reading without requiring writing or invoking a model', async () => {
+    vi.mocked(api.get).mockImplementation(async (path) => path === '/api/philosophy' ? pack : { inquiries: [] });
     setup('/');
     expect(await screen.findByRole('link', { name: 'Read the essay' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Read the essay' }).getAttribute('href')).toBe('/read/trust');
     expect(api.post).not.toHaveBeenCalled();
+  });
+  it('leads with the latest active inquiry and keeps resting questions folded', async () => {
+    const latest = { ...data.inquiry, id: 'latest', question: 'What do I owe a stranger?' };
+    const paused = { ...latest, id: 'paused', question: 'Where was I?', status: 'paused' };
+    vi.mocked(api.get).mockImplementation(async (path) => path === '/api/philosophy' ? pack : { inquiries: [paused, latest, data.inquiry] });
+    setup('/');
+    expect((await screen.findByRole('link', { name: 'Continue this question' })).getAttribute('href')).toBe('/inquiry/latest');
+    expect(screen.getByRole('heading', { name: latest.question })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /When should I trust/ })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: paused.question })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Show paused and resting/ }));
+    expect(screen.getByRole('heading', { name: paused.question })).toBeTruthy();
   });
   it('branches to a personal question unrelated to research', async () => {
     await openEditor();
@@ -177,6 +190,33 @@ describe('Personal inquiry journey', () => {
     expect(writes[1]!.revisesId).toBe(writes[0]!.id);
     expect(writes[0]!.bodyMd).toBe('Trust always helps.');
     expect(vi.mocked(api.post).mock.calls.every(([path]) => path.endsWith('/writings'))).toBe(true);
+  });
+  it('links each explicitly copied piece to its acknowledged Notebook entry and keeps the inquiry draft', async () => {
+    const first: InquiryWriting = { id: 'w1', inquiryId: 'q1', bodyMd: 'First piece', mode: 'argument', revisesId: null, sourceNodeId: null, createdAt: '2026-11-18T00:00:00Z' };
+    data.writings = [first, { ...first, id: 'w2', bodyMd: 'Second piece' }];
+    vi.mocked(api.post).mockResolvedValueOnce({}).mockResolvedValueOnce({ entryId: 'ack-A' }).mockResolvedValueOnce({ entryId: 'ack-B' });
+    const editor = await openEditor();
+    fireEvent.change(editor, { target: { value: 'Still thinking.' } });
+    for (const summary of screen.getAllByText('Optional: take this piece to the Notebook')) fireEvent.click(summary);
+    const buttons = screen.getAllByRole('button', { name: 'Copy this piece to Notebook' });
+    expect(api.post).not.toHaveBeenCalled();
+    fireEvent.click(buttons[0]!);
+    await screen.findByText(/copy was not confirmed/i);
+    expect(screen.queryByRole('link', { name: 'Open the copied entry' })).toBeNull();
+
+    fireEvent.click(buttons[0]!);
+    const firstLink = await screen.findByRole('link', { name: 'Open the copied entry' });
+    expect(firstLink.getAttribute('href')).toBe('/notebook?entry=ack-A');
+    expect(firstLink.closest('article')?.id).toBe('writing-w1');
+    fireEvent.click(buttons[1]!);
+    await waitFor(() => expect(screen.getAllByRole('link', { name: 'Open the copied entry' })).toHaveLength(2));
+    const secondLink = screen.getAllByRole('link', { name: 'Open the copied entry' })[1]!;
+    expect(secondLink.getAttribute('href')).toBe('/notebook?entry=ack-B');
+    expect(secondLink.closest('article')?.id).toBe('writing-w2');
+    expect(api.post).toHaveBeenCalledTimes(3);
+    expect(api.post).toHaveBeenLastCalledWith('/api/inquiries/q1/writings/w2/notebook');
+    expect(readInquiryDraft(user.uid, 'q1')?.bodyMd).toBe(editor.value);
+    expect(editor.value).toBe('Still thinking.');
   });
   it('requires an earlier saved piece when choosing the revision approach', async () => {
     data.writings = [{ id: 'w1', inquiryId: 'q1', bodyMd: 'Earlier claim', mode: 'argument', revisesId: null, sourceNodeId: null, createdAt: '2026-11-18T00:00:00Z' }];

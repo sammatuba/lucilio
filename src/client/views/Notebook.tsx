@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import {
   collection,
@@ -28,6 +29,10 @@ import type { DeskPayload } from '../../shared/schemas';
 // "Sealing…" (roadmap M1-6).
 export default function Notebook({ user, desk, refresh }: { user: User; desk: DeskPayload | null; refresh: () => void }) {
   const [draft, setDraft] = useState(() => getNotebookDraft(user.uid));
+  const [params] = useSearchParams();
+  const targetId = params.get('entry');
+  const targetRef = useRef<HTMLElement>(null);
+  const [listStatus, setListStatus] = useState<'loading' | 'cached' | 'current' | { error: string }>('loading');
   const [entries, setEntries] = useState<EntryDoc[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pendingDraft, setPendingDraft] = useState<string | null>(null);
@@ -110,13 +115,23 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
     const q = query(collection(db, `users/${user.uid}/notebook`), orderBy('createdAt', 'desc'));
     return onSnapshot(
       q,
+      { includeMetadataChanges: true },
       (snap) => {
         setEntries(snap.docs.map((d) => d.data() as EntryDoc));
         setSyncNote(snap.metadata.hasPendingWrites);
+        setListStatus(snap.metadata.fromCache ? 'cached' : 'current');
       },
-      (e) => setError(snapshotCopy(e)),
+      (e) => setListStatus({ error: snapshotCopy(e) }),
     );
   }, [user.uid]);
+
+  const targetFound = entries.some((entry) => entry.id === targetId);
+  useEffect(() => {
+    if (targetFound) {
+      targetRef.current?.focus({ preventScroll: true });
+      targetRef.current?.scrollIntoView({ block: 'center' });
+    }
+  }, [targetId, targetFound]);
 
   async function save(text: string) {
     if (!text.trim() || saving || queued) return;
@@ -188,26 +203,13 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
           {syncNote && ' (some entries are still syncing from offline)'}
         </p>
 
-        <NotebookGuide defaultOpen={entries.length === 0} />
-
-        <details className="journal-preferences">
-          <summary>Your reflection preferences</summary>
-          {settingsReady && <>
-            <ReflectionControls value={preferences} onChange={setPreferences} disabled={settingsBusy} />
-            <label><input type="checkbox" checked={preferences.autoReflect} onChange={(e) => setPreferences({ ...preferences, autoReflect: e.target.checked })} /> Reflect automatically after I save a new entry</label>
-            <p className="composer-hint">Off by default. When enabled, the saved entry is sent for AI reflection after it finishes syncing.</p>
-            <label><input type="checkbox" checked={weeklyLetters} onChange={(e) => setWeeklyLetters(e.target.checked)} /> Receive weekly letters based on my recent writing</label>
-            <p className="composer-hint">Weekly letters use recent entries, replies, and correspondence memory. Turning this off does not cancel work already started.</p>
-            <button className="btn-quiet" disabled={settingsBusy} onClick={rememberPreferences}>{settingsBusy ? 'Saving preferences…' : 'Remember preferences'}</button>
-          </>}
-          {settingsReady && settingsNote && <p role="status">{settingsNote}</p>}
-        </details>
-
-        {!settingsReady && settingsNote && (
-          <div className="save-error" role="alert">
-            <span>{settingsNote}</span>
-            <button className="btn-quiet" onClick={() => setSettingsAttempt((attempt) => attempt + 1)}>Retry preferences</button>
-          </div>
+        {typeof listStatus === 'object' && <p className="save-error" role="alert">{listStatus.error}</p>}
+        {targetId !== null && !targetFound && typeof listStatus === 'string' && (
+          <p role="status">
+            {listStatus === 'current' ? 'This entry could not be found in your Notebook.'
+              : listStatus === 'cached' ? 'This entry is not on this device yet. Waiting for your Notebook to sync.'
+              : 'Looking for this entry in your Notebook…'}
+          </p>
         )}
 
         {error && (
@@ -256,10 +258,32 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
           </p>
         )}
 
+        {listStatus !== 'loading' && <NotebookGuide defaultOpen={entries.length === 0} />}
+
+        <details className="journal-preferences">
+          <summary>Your reflection preferences</summary>
+          {settingsReady && <>
+            <ReflectionControls value={preferences} onChange={setPreferences} disabled={settingsBusy} />
+            <label><input type="checkbox" checked={preferences.autoReflect} onChange={(e) => setPreferences({ ...preferences, autoReflect: e.target.checked })} /> Reflect automatically after I save a new entry</label>
+            <p className="composer-hint">Off by default. When enabled, the saved entry is sent for AI reflection after it finishes syncing.</p>
+            <label><input type="checkbox" checked={weeklyLetters} onChange={(e) => setWeeklyLetters(e.target.checked)} /> Receive weekly letters based on my recent writing</label>
+            <p className="composer-hint">Weekly letters use recent entries, replies, and correspondence memory. Turning this off does not cancel work already started.</p>
+            <button className="btn-quiet" disabled={settingsBusy} onClick={rememberPreferences}>{settingsBusy ? 'Saving preferences…' : 'Remember preferences'}</button>
+          </>}
+          {settingsReady && settingsNote && <p role="status">{settingsNote}</p>}
+        </details>
+
+        {!settingsReady && settingsNote && (
+          <div className="save-error" role="alert">
+            <span>{settingsNote}</span>
+            <button className="btn-quiet" onClick={() => setSettingsAttempt((attempt) => attempt + 1)}>Retry preferences</button>
+          </div>
+        )}
+
         <WaitingTray desk={desk} refresh={refresh} />
 
         <div className="entry-list">
-          {entries.length === 0 && (
+          {listStatus === 'current' && entries.length === 0 && (
             <div className="entry-empty">
               <p className="entry-empty-lead">No entries yet.</p>
               <p className="composer-hint">
@@ -272,10 +296,14 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
           )}
           {entries.map((e) => {
             const isNew = e.id === savedEntryId;
+            const isTarget = e.id === targetId;
             return (
-              <div className={`entry-item${isNew ? ' is-new' : ''}`} key={e.id}>
+              <article className={`entry-item${isNew ? ' is-new' : ''}`} key={e.id}
+                ref={isTarget ? targetRef : undefined} tabIndex={isTarget ? -1 : undefined}
+                aria-label={isTarget ? 'Linked Notebook entry' : undefined}>
                 <div className="when">
                   {new Date(e.createdAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  {isTarget && <span className="entry-badge">Linked entry</span>}
                   {isNew && <span className="entry-badge">Saved just now</span>}
                 </div>
                 <div className="body">{e.bodyMd}</div>
@@ -292,7 +320,7 @@ export default function Notebook({ user, desk, refresh }: { user: User; desk: De
                       </div>
                     )
                     : <button className="btn-quiet" disabled={syncNote} onClick={() => inviteReflection(e.id)}>Reflect on this</button>)}
-              </div>
+              </article>
             );
           })}
         </div>

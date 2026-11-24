@@ -87,7 +87,7 @@ describe('onboarding guard on every route (M2-6)', () => {
     cleanup();
   });
 
-  it.each(['/', '/notebook', '/desk', '/philosophy', '/read/trust', '/inquiry/test', '/correspondents', '/atlas', '/atlas/liternum', '/trust', '/letter/abc'])(
+  it.each(['/', '/notebook', '/desk', '/explore', '/explore/essays', '/philosophy', '/read/trust', '/inquiry/test', '/correspondents', '/atlas', '/atlas/liternum', '/trust', '/letter/abc'])(
     '%s leads back to onboarding before the practice begins',
     async (path) => {
       deskPayload = baseDesk({ profile: { tz: 'UTC', postDay: 'sunday', onboarded: false, crisisNotice: false } });
@@ -110,6 +110,20 @@ describe('onboarding guard on every route (M2-6)', () => {
     expect(await screen.findByRole('heading', { name: 'Notebook' })).toBeTruthy();
   });
 
+  it('exposes each Explore collection and its description to keyboard and screen-reader users', async () => {
+    deskPayload = baseDesk();
+    render(<MemoryRouter initialEntries={['/explore']}><App /></MemoryRouter>);
+    for (const [name, description] of [
+      ['Essays', /ordinary moment/],
+      ['Philosophy Map', /thinkers, traditions/],
+      ['Atlas', /question to carry/],
+    ] as const) {
+      const link = await screen.findByRole('link', { name, description });
+      link.focus();
+      expect(document.activeElement).toBe(link);
+    }
+  });
+
   it('/desk redirects to the reading-first practice', async () => {
     deskPayload = baseDesk();
     render(
@@ -117,7 +131,7 @@ describe('onboarding guard on every route (M2-6)', () => {
         <App />
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('heading', { name: 'A question worth staying with.' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Practice' })).toBeTruthy();
   });
 
   it('/study redirects to /correspondents', async () => {
@@ -155,7 +169,7 @@ describe('onboarding guard on every route (M2-6)', () => {
         <App />
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('heading', { name: 'A question worth staying with.' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Practice' })).toBeTruthy();
   });
 });
 

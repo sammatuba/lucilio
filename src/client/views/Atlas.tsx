@@ -57,6 +57,7 @@ export default function Atlas() {
   const { pack, plates } = payload;
   return (
     <>
+      <nav className="inquiry-breadcrumbs" aria-label="Atlas navigation"><Link to="/explore">Explore</Link></nav>
       <header className="illustrated-header">
         <div>
           <h2 className="page-title">The Atlas</h2>
